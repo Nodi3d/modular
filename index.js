@@ -220,11 +220,11 @@ export function do_nothing_just_tell_wasm_bindgen_to_generate_types() {
 }
 
 function __wbg_adapter_52(arg0, arg1, arg2) {
-    wasm.closure765_externref_shim(arg0, arg1, arg2);
+    wasm.closure774_externref_shim(arg0, arg1, arg2);
 }
 
 function __wbg_adapter_142(arg0, arg1, arg2, arg3) {
-    wasm.closure3426_externref_shim(arg0, arg1, arg2, arg3);
+    wasm.closure3434_externref_shim(arg0, arg1, arg2, arg3);
 }
 
 const ModularFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -310,12 +310,15 @@ export class Modular {
      * Change a node property with node id and property
      * @param {string} node_id
      * @param {NodePropertyInterop} prop
+     * @param {string | null} [graph_id]
      * @returns {boolean}
      */
-    changeNodeProperty(node_id, prop) {
+    changeNodeProperty(node_id, prop, graph_id) {
         const ptr0 = passStringToWasm0(node_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
         const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.modular_changeNodeProperty(this.__wbg_ptr, ptr0, len0, prop);
+        var ptr1 = isLikeNone(graph_id) ? 0 : passStringToWasm0(graph_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        var len1 = WASM_VECTOR_LEN;
+        const ret = wasm.modular_changeNodeProperty(this.__wbg_ptr, ptr0, len0, prop, ptr1, len1);
         return ret !== 0;
     }
     /**
@@ -660,8 +663,8 @@ function __wbg_get_imports() {
         const ret = false;
         return ret;
     };
-    imports.wbg.__wbindgen_closure_wrapper3236 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 766, __wbg_adapter_52);
+    imports.wbg.__wbindgen_closure_wrapper3355 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 775, __wbg_adapter_52);
         return ret;
     };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
