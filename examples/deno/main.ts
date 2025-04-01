@@ -1,4 +1,4 @@
-import init, { Modular } from "npm:nodi-modular@0.0.9";
+import init, { Modular } from "npm:nodi-modular@0.0.10";
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/assert_equals.ts";
 import file from "./attractor.json" with { type: "json" };
 
