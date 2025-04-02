@@ -1,6 +1,18 @@
 /* tslint:disable */
 /* eslint-disable */
 export function do_nothing_just_tell_wasm_bindgen_to_generate_types(): void;
+export interface GeometryTransformInterop {
+    geometry: GeometryProxy;
+    transform: TransformInterop;
+}
+
+/**
+ * Evaluation item interoperability type.
+ */
+export type Item = { variant: "Bool"; data: boolean } | { variant: "String"; data: string } | { variant: "Number"; data: number } | { variant: "Domain"; data: Domain } | { variant: "Vector3"; data: Vector3<number> } | { variant: "Matrix4"; data: Matrix4<number> } | { variant: "Complex"; data: Complex<number> } | { variant: "Point3"; data: Point3<number> } | { variant: "Plane"; data: Plane } | { variant: "GeometryTransform"; data: GeometryTransformInterop } | { variant: "MeshFace"; data: MeshTriangleFace };
+
+export type NodeOutput = (Map<string, Item[]> | undefined)[];
+
 export interface GroupInteropHandle {
     objects: GeometryInteropHandleProxy[];
 }
@@ -210,6 +222,7 @@ export type Vector3<T = number> = SVector<T, 3>;
 export type Point4<T = number> = Point<T, 4>;
 export type Vector4<T = number> = SVector<T, 4>;
 export type Transform3<T = number> = FixedLengthArray<T, 16>;
+export type Matrix4<T = number> = FixedLengthArray<FixedLengthArray<T, 4>, 4>;
 
 
 /**
@@ -352,68 +365,6 @@ export interface Prune<T, U> {
     bypass: Connection[] | undefined;
 }
 
-export interface ConnectedComponentNode {
-    sources: NodeId[];
-    destinations: NodeId[];
-}
-
-export interface ConnectedComponents<T, U> {
-    nodes: IndexMap<NodeId, ConnectedComponentNode<T, U>>;
-}
-
-export type GraphVariant = "Root" | { SubGraph: SubGraphId };
-
-export type GraphMappingTypes = "None" | "Bezier" | "Linear" | "Sine";
-
-/**
- * Graph structure
- */
-export interface Graph<T, U> {
-    /**
-     * Nodes in the graph
-     */
-    nodes: IndexMap<NodeId, Node<T, U>>;
-    /**
-     * nested graphs
-     */
-    sub_graphs?: IndexMap<SubGraphId, SubGraph<T, U>>;
-}
-
-export interface Node<T> {
-    id: NodeId;
-    name: string;
-    label: string | undefined;
-    input: InputIOManager;
-    output: OutputIOManager;
-    entity: T;
-    enabled: boolean;
-    visible: boolean;
-}
-
-export type OutputIOManager = IOManager<OutputId, InputId>;
-
-export type InputIOManager = IOManager<InputId, OutputId>;
-
-export type TypeHint = Internal;
-
-/**
- * A sub graph is a graph that is a part of a larger graph
- */
-export interface SubGraph<T, U> {
-    /**
-     * The id of the sub graph
-     */
-    id: SubGraphId;
-    /**
-     * The graph of the sub graph
-     */
-    graph: Graph<T, U>;
-    /**
-     * The instances of the sub graph
-     */
-    instances: SubGraphInstanceId[];
-}
-
 export interface NodePropertyCategoryValue {
     candidates: Map<string, number>;
     selected: number;
@@ -438,6 +389,79 @@ export interface NodeParameter<T> {
     parameterId: T;
     parameterIndex: number;
 }
+
+export interface ConnectedComponentNode {
+    sources: NodeId[];
+    destinations: NodeId[];
+}
+
+export interface ConnectedComponents<T, U> {
+    nodes: IndexMap<NodeId, ConnectedComponentNode<T, U>>;
+}
+
+/**
+ * A parameter for an input or output of a node.
+ */
+export interface IOParameter<T, U> {
+    id: T;
+    name: string;
+    access_type: AccessTypes;
+    hint?: TypeHint;
+    connections: U[];
+}
+
+/**
+ * Graph structure
+ */
+export interface Graph<T, U> {
+    /**
+     * Nodes in the graph
+     */
+    nodes: IndexMap<NodeId, Node<T, U>>;
+    /**
+     * nested graphs
+     */
+    sub_graphs?: IndexMap<SubGraphId, SubGraph<T, U>>;
+}
+
+export type GraphMappingTypes = "None" | "Bezier" | "Linear" | "Sine";
+
+/**
+ * A sub graph is a graph that is a part of a larger graph
+ */
+export interface SubGraph<T, U> {
+    /**
+     * The id of the sub graph
+     */
+    id: SubGraphId;
+    /**
+     * The graph of the sub graph
+     */
+    graph: Graph<T, U>;
+    /**
+     * The instances of the sub graph
+     */
+    instances: SubGraphInstanceId[];
+}
+
+export interface Node<T> {
+    id: NodeId;
+    name: string;
+    label: string | undefined;
+    input: InputIOManager;
+    output: OutputIOManager;
+    entity: T;
+    enabled: boolean;
+    visible: boolean;
+}
+
+export type OutputIOManager = IOManager<OutputId, InputId>;
+
+export type InputIOManager = IOManager<InputId, OutputId>;
+
+export type TypeHint = Internal;
+
+export type GraphVariant = "Root" | { SubGraph: SubGraphId };
 
 export interface IOManager<T, U> {
     parameters: IOParameter<T, U>[];
@@ -494,6 +518,15 @@ export type PolylineCurve3D = {
 };
 
 /**
+ * A face of a mesh with three vertices
+ */
+export interface MeshTriangleFace {
+    a: number;
+    b: number;
+    c: number;
+}
+
+/**
  * An arc curve in 3D space
  */
 export interface ArcCurve {
@@ -513,6 +546,25 @@ export interface ArcCurve {
      * The radius of the arc
      */
     radius: number;
+}
+
+/**
+ * A collection of geometry objects
+ */
+export type Group = GeometryTransform[];
+
+/**
+ * A geometry object with a transformation
+ */
+export interface GeometryTransform {
+    /**
+     * The handle to the geometry object
+     */
+    geometry: Handle<GeometryProxy>;
+    /**
+     * Transformation matrix of the geometry
+     */
+    transform: Transform3<number>;
 }
 
 
@@ -774,6 +826,10 @@ export class Modular {
    */
   changeNodeProperty(node_id: string, prop: NodePropertyInterop, graph_id?: string | null): boolean;
   /**
+   * Get the outputs of a node
+   */
+  getNodeOutput(node_id: string): NodeOutput | undefined;
+  /**
    * Find a geometry by its identifier
    */
   findGeometryById(identifier: GeometryIdentifier): GeometryProxy | undefined;
@@ -799,6 +855,7 @@ export interface InitOutput {
   readonly modular_evaluate: (a: number) => any;
   readonly modular_getNodes: (a: number) => [number, number];
   readonly modular_changeNodeProperty: (a: number, b: number, c: number, d: any, e: number, f: number) => number;
+  readonly modular_getNodeOutput: (a: number, b: number, c: number) => any;
   readonly modular_findGeometryById: (a: number, b: any) => any;
   readonly modular_findGeometryInteropById: (a: number, b: any) => any;
   readonly modular_updateTessellationOptions: (a: number, b: number) => void;
@@ -812,8 +869,8 @@ export interface InitOutput {
   readonly __externref_table_dealloc: (a: number) => void;
   readonly __externref_drop_slice: (a: number, b: number) => void;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
-  readonly closure784_externref_shim: (a: number, b: number, c: any) => void;
-  readonly closure3446_externref_shim: (a: number, b: number, c: any, d: any) => void;
+  readonly closure786_externref_shim: (a: number, b: number, c: any) => void;
+  readonly closure3448_externref_shim: (a: number, b: number, c: any, d: any) => void;
   readonly __wbindgen_start: () => void;
 }
 

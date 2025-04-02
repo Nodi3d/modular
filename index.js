@@ -225,11 +225,11 @@ export function do_nothing_just_tell_wasm_bindgen_to_generate_types() {
 }
 
 function __wbg_adapter_52(arg0, arg1, arg2) {
-    wasm.closure784_externref_shim(arg0, arg1, arg2);
+    wasm.closure786_externref_shim(arg0, arg1, arg2);
 }
 
-function __wbg_adapter_144(arg0, arg1, arg2, arg3) {
-    wasm.closure3446_externref_shim(arg0, arg1, arg2, arg3);
+function __wbg_adapter_145(arg0, arg1, arg2, arg3) {
+    wasm.closure3448_externref_shim(arg0, arg1, arg2, arg3);
 }
 
 const ModularFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -325,6 +325,17 @@ export class Modular {
         var len1 = WASM_VECTOR_LEN;
         const ret = wasm.modular_changeNodeProperty(this.__wbg_ptr, ptr0, len0, prop, ptr1, len1);
         return ret !== 0;
+    }
+    /**
+     * Get the outputs of a node
+     * @param {string} node_id
+     * @returns {NodeOutput | undefined}
+     */
+    getNodeOutput(node_id) {
+        const ptr0 = passStringToWasm0(node_id, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
+        const len0 = WASM_VECTOR_LEN;
+        const ret = wasm.modular_getNodeOutput(this.__wbg_ptr, ptr0, len0);
+        return ret;
     }
     /**
      * Find a geometry by its identifier
@@ -512,7 +523,7 @@ function __wbg_get_imports() {
                 const a = state0.a;
                 state0.a = 0;
                 try {
-                    return __wbg_adapter_144(a, state0.b, arg0, arg1);
+                    return __wbg_adapter_145(a, state0.b, arg0, arg1);
                 } finally {
                     state0.a = a;
                 }
@@ -674,8 +685,8 @@ function __wbg_get_imports() {
         const ret = false;
         return ret;
     };
-    imports.wbg.__wbindgen_closure_wrapper3391 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 785, __wbg_adapter_52);
+    imports.wbg.__wbindgen_closure_wrapper3424 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 787, __wbg_adapter_52);
         return ret;
     };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {
