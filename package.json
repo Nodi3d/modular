@@ -5,7 +5,7 @@
     "Masatatsu Nakamura <masatatsu.nakamura@gmail.com"
   ],
   "description": "Modular is a module project designed to import node graphs created in Nodi in JSON format, enabling the extraction of geometric data generated based on the node graph structure.",
-  "version": "0.0.14",
+  "version": "0.0.15",
   "license": "MIT",
   "repository": {
     "type": "git",
