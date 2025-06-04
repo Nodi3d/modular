@@ -4,7 +4,7 @@ import { useControls } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
 import init, { Modular, NodeInterop } from "nodi-modular";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { BufferAttribute, BufferGeometry, DoubleSide, Euler } from "three";
+import { BufferAttribute, BufferGeometry, DoubleSide, Euler, Matrix4 } from "three";
 import shell from "./shell.json";
 
 function App() {
@@ -16,15 +16,19 @@ function App() {
     (m: Modular) => {
       m.evaluate().then((e) => {
         const { geometryIdentifiers } = e;
+
         const gs = geometryIdentifiers
           .map((id) => {
             const interop = m.findGeometryInteropById(id);
+            const { transform } = id;
+
             switch (interop?.variant) {
               case "Mesh": {
                 const { data } = interop;
                 const geometry = new BufferGeometry();
 
                 const { vertices, normals, faces } = data;
+
                 geometry.setAttribute(
                   "position",
                   new BufferAttribute(new Float32Array(vertices.flat(1)), 3)
@@ -39,6 +43,8 @@ function App() {
                   );
                 }
 
+                geometry.applyMatrix4(new Matrix4().fromArray(transform));
+
                 return geometry;
               }
               default: {
@@ -50,7 +56,7 @@ function App() {
         setGeometries(gs);
       });
     },
-    [modular]
+    []
   );
 
   const handleChange = useCallback(
@@ -134,7 +140,7 @@ function App() {
       await init();
       setModular(Modular.new());
     })();
-  }, [init]);
+  }, []);
 
   useEffect(() => {
     if (modular !== null) {
