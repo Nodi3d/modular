@@ -1,12 +1,12 @@
 /* tslint:disable */
 /* eslint-disable */
 export function do_nothing_just_tell_wasm_bindgen_to_generate_types(): void;
+export type NodeOutput = (Map<string, Item[]> | undefined)[];
+
 /**
  * Evaluation item interoperability type.
  */
 export type Item = { variant: "Bool"; data: boolean } | { variant: "String"; data: string } | { variant: "Number"; data: number } | { variant: "Domain"; data: Domain } | { variant: "Vector3"; data: Vector3<number> } | { variant: "Matrix4"; data: Matrix4<number> } | { variant: "Complex"; data: Complex<number> } | { variant: "Point3"; data: Point3<number> } | { variant: "Plane"; data: Plane } | { variant: "GeometryTransform"; data: GeometryTransformInterop } | { variant: "MeshFace"; data: MeshTriangleFace };
-
-export type NodeOutput = (Map<string, Item[]> | undefined)[];
 
 export interface GeometryTransformInterop {
     geometry: GeometryProxy;
@@ -336,6 +336,108 @@ export interface NodeMapInterop {
 
 export type GraphMappingTypes = "None" | "Bezier" | "Linear" | "Sine";
 
+export interface IOManager<T, U> {
+    parameters: IOParameter<T, U>[];
+}
+
+/**
+ * Graph structure
+ */
+export interface Graph<T, U> {
+    /**
+     * Nodes in the graph
+     */
+    nodes: IndexMap<NodeId, Node<T, U>>;
+    /**
+     * nested graphs
+     */
+    sub_graphs?: IndexMap<SubGraphId, SubGraph<T, U>>;
+}
+
+export interface Prune<T, U> {
+    connectedComponents: ConnectedComponents<T, U>[];
+    bypass: Connection[] | undefined;
+}
+
+/**
+ * A parameter for an input or output of a node.
+ */
+export interface IOParameter<T, U> {
+    id: T;
+    name: string;
+    access_type: AccessTypes;
+    hint?: TypeHint;
+    connections: U[];
+}
+
+/**
+ * Defines the dynamics of an IO parameter.
+ */
+export interface IOVariables {
+    minCount: number;
+    maxCount: number;
+    defaultCount: number;
+    offset: number;
+    editable: boolean;
+}
+
+export type TypeHint = Internal;
+
+/**
+ * A sub graph is a graph that is a part of a larger graph
+ */
+export interface SubGraph<T, U> {
+    /**
+     * The id of the sub graph
+     */
+    id: SubGraphId;
+    /**
+     * The graph of the sub graph
+     */
+    graph: Graph<T, U>;
+    /**
+     * The instances of the sub graph
+     */
+    instances: SubGraphInstanceId[];
+}
+
+export interface Node<T> {
+    id: NodeId;
+    name: string;
+    label: string | undefined;
+    input: InputIOManager;
+    output: OutputIOManager;
+    entity: T;
+    enabled: boolean;
+    visible: boolean;
+}
+
+export type OutputIOManager = IOManager<OutputId, InputId>;
+
+export type InputIOManager = IOManager<InputId, OutputId>;
+
+export interface Connection {
+    source: NodeParameter<OutputId>;
+    destination: NodeParameter<InputId>;
+}
+
+export interface NodeParameter<T> {
+    nodeId: NodeId;
+    parameterId: T;
+    parameterIndex: number;
+}
+
+export interface ConnectedComponentNode {
+    sources: NodeId[];
+    destinations: NodeId[];
+}
+
+export interface ConnectedComponents<T, U> {
+    nodes: IndexMap<NodeId, ConnectedComponentNode<T, U>>;
+}
+
+export type GraphVariant = "Root" | { SubGraph: SubGraphId };
+
 export interface SubGraphIdSet {
     subGraphId: SubGraphId;
     instanceId: SubGraphInstanceId;
@@ -355,21 +457,6 @@ export interface NodePropertyRangeValue {
 
 export type NodePropertyValue = { type: "Number"; content: number } | { type: "Range"; content: NodePropertyRangeValue } | { type: "Range2d"; content: [NodePropertyRangeValue, NodePropertyRangeValue] } | { type: "String"; content: string } | { type: "Bool"; content: boolean } | { type: "NumberVector"; content: number[] } | { type: "Category"; content: NodePropertyCategoryValue } | { type: "Vector2d"; content: [number, number] } | { type: "Vector3d"; content: [number, number, number] } | { type: "Point2d"; content: [number, number] } | { type: "Point3d"; content: [number, number, number] } | { type: "Points2d"; content: [number, number][] } | { type: "Buffer"; content: number[] };
 
-export interface Node<T> {
-    id: NodeId;
-    name: string;
-    label: string | undefined;
-    input: InputIOManager;
-    output: OutputIOManager;
-    entity: T;
-    enabled: boolean;
-    visible: boolean;
-}
-
-export type OutputIOManager = IOManager<OutputId, InputId>;
-
-export type InputIOManager = IOManager<InputId, OutputId>;
-
 /**
  * A set of node id and instance id
  */
@@ -378,94 +465,7 @@ export interface GraphNodeSet {
     nodeId: NodeId;
 }
 
-/**
- * Graph structure
- */
-export interface Graph<T, U> {
-    /**
-     * Nodes in the graph
-     */
-    nodes: IndexMap<NodeId, Node<T, U>>;
-    /**
-     * nested graphs
-     */
-    sub_graphs?: IndexMap<SubGraphId, SubGraph<T, U>>;
-}
-
 export type AccessTypes = "Item" | "List" | "Tree";
-
-export interface Prune<T, U> {
-    connectedComponents: ConnectedComponents<T, U>[];
-    bypass: Connection[] | undefined;
-}
-
-/**
- * A parameter for an input or output of a node.
- */
-export interface IOParameter<T, U> {
-    id: T;
-    name: string;
-    access_type: AccessTypes;
-    hint?: TypeHint;
-    connections: U[];
-}
-
-export interface ConnectedComponentNode {
-    sources: NodeId[];
-    destinations: NodeId[];
-}
-
-export interface ConnectedComponents<T, U> {
-    nodes: IndexMap<NodeId, ConnectedComponentNode<T, U>>;
-}
-
-export type GraphVariant = "Root" | { SubGraph: SubGraphId };
-
-/**
- * Defines the dynamics of an IO parameter.
- */
-export interface IOVariables {
-    minCount: number;
-    maxCount: number;
-    defaultCount: number;
-    offset: number;
-    editable: boolean;
-}
-
-export type TypeHint = Internal;
-
-export interface IOManager<T, U> {
-    parameters: IOParameter<T, U>[];
-}
-
-export interface Connection {
-    source: NodeParameter<OutputId>;
-    destination: NodeParameter<InputId>;
-}
-
-export interface NodeParameter<T> {
-    nodeId: NodeId;
-    parameterId: T;
-    parameterIndex: number;
-}
-
-/**
- * A sub graph is a graph that is a part of a larger graph
- */
-export interface SubGraph<T, U> {
-    /**
-     * The id of the sub graph
-     */
-    id: SubGraphId;
-    /**
-     * The graph of the sub graph
-     */
-    graph: Graph<T, U>;
-    /**
-     * The instances of the sub graph
-     */
-    instances: SubGraphInstanceId[];
-}
 
 
 export type LineCurve3D = {
@@ -871,8 +871,8 @@ export interface InitOutput {
   readonly __externref_table_dealloc: (a: number) => void;
   readonly __externref_drop_slice: (a: number, b: number) => void;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
-  readonly closure840_externref_shim: (a: number, b: number, c: any) => void;
-  readonly closure3514_externref_shim: (a: number, b: number, c: any, d: any) => void;
+  readonly closure839_externref_shim: (a: number, b: number, c: any) => void;
+  readonly closure3513_externref_shim: (a: number, b: number, c: any, d: any) => void;
   readonly __wbindgen_start: () => void;
 }
 
