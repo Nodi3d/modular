@@ -5,7 +5,7 @@ import { Schema } from "leva/dist/declarations/src/types";
 import init, { Modular, NodeInterop } from "nodi-modular";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BufferAttribute, BufferGeometry, DoubleSide, Euler, Matrix4 } from "three";
-import shell from "./shell.json";
+import frange from "./frange.json";
 
 function App() {
   const [modular, setModular] = useState<Modular | null>(null);
@@ -48,6 +48,7 @@ function App() {
 
                   return geometry;
                 }
+                
                 default: {
                   return null;
                 }
@@ -156,7 +157,7 @@ function App() {
 
   useEffect(() => {
     if (modular !== null) {
-      modular.loadGraph(JSON.stringify(shell.graph));
+      modular.loadGraph(JSON.stringify(frange.graph));
       // modular.loadGraph(JSON.stringify(brickWall.graph));
       const nodes = modular.getNodes();
       const numberNodes = nodes.filter((n) => n.variant === "Number" || n.variant === "NumberSlider");
@@ -180,7 +181,8 @@ function App() {
         dpr={[1, 1.5]}
         camera={{ position: [4, -1, 8], fov: 35 }}
       >
-        <Sky distance={50000} sunPosition={[0, 1, 0]} inclination={0} azimuth={0.25} />
+        <color attach="background" args={["#d0d0d0"]} />
+        {/* <Sky distance={50000} sunPosition={[0, 1, 0]} inclination={0} azimuth={0.25} /> */}
         {geometries.length > 0 && (
           <Stage
             intensity={0.5}
@@ -192,10 +194,11 @@ function App() {
             <group rotation={new Euler(-Math.PI * 0.5, 0, 0)}>
               {geometries.map((geometry, i) => (
                 <mesh key={i} geometry={geometry} castShadow>
-                  <meshStandardMaterial
-                    color="white"
-                    roughness={0.25}
-                    metalness={0.25}
+                  <meshStandardMaterial 
+                    color="#707d92"
+                    roughness={0.2}
+                    metalness={0.8}
+                    envMapIntensity={1.8}
                     side={DoubleSide}
                   />
                 </mesh>
