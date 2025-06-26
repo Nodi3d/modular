@@ -1,4 +1,4 @@
-import { OrbitControls, Sky, Stage } from "@react-three/drei";
+import { OrbitControls, Sky, Stage, Line, Grid } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useControls } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
@@ -10,56 +10,74 @@ import frange from "./frange.json";
 function App() {
   const [modular, setModular] = useState<Modular | null>(null);
   const [nodes, setNodes] = useState<NodeInterop[]>([]);
-  const [geometries, setGeometries] = useState<BufferGeometry[]>([]);
+  const [meshGeometries, setMeshGeometries] = useState<BufferGeometry[]>([]);
+  const [curveGeometries, setCurveGeometries] = useState<BufferGeometry[]>([]);
 
   const evaluate = useCallback(
     (m: Modular) => {
       m.evaluate().then((e) => {
         const { geometryIdentifiers } = e;
 
-        const gs = geometryIdentifiers
-          .map((id) => {
-            try {
-              const interop = m.findGeometryInteropById(id);
-              const { transform } = id;
+        const meshes: BufferGeometry[] = [];
+        const curves: BufferGeometry[] = [];
 
-              switch (interop?.variant) {
-                case "Mesh": {
-                  const { data } = interop;
-                  const geometry = new BufferGeometry();
+        geometryIdentifiers.forEach((id) => {
+          try {
+            const interop = m.findGeometryInteropById(id);
+            const { transform } = id;
 
-                  const { vertices, normals, faces } = data;
+            switch (interop?.variant) {
+              case "Mesh": {
+                const { data } = interop;
+                const geometry = new BufferGeometry();
 
-                  geometry.setAttribute(
-                    "position",
-                    new BufferAttribute(new Float32Array(vertices.flat(1)), 3)
+                const { vertices, normals, faces } = data;
+
+                geometry.setAttribute(
+                  "position",
+                  new BufferAttribute(new Float32Array(vertices.flat(1)), 3)
+                );
+                geometry.setAttribute(
+                  "normal",
+                  new BufferAttribute(new Float32Array(normals.flat(1)), 3)
+                );
+                if (faces !== undefined) {
+                  geometry.setIndex(
+                    new BufferAttribute(new Uint32Array(faces.flat(1)), 1)
                   );
-                  geometry.setAttribute(
-                    "normal",
-                    new BufferAttribute(new Float32Array(normals.flat(1)), 3)
-                  );
-                  if (faces !== undefined) {
-                    geometry.setIndex(
-                      new BufferAttribute(new Uint32Array(faces.flat(1)), 1)
-                    );
-                  }
-
-                  geometry.applyMatrix4(new Matrix4().fromArray(transform));
-
-                  return geometry;
                 }
-                
-                default: {
-                  return null;
-                }
+
+                geometry.applyMatrix4(new Matrix4().fromArray(transform));
+                meshes.push(geometry);
+                break;
               }
-            } catch (error) {
-              console.error("Error processing geometry:", error);
-              return null;
+              case "Curve": {
+                const { data } = interop;
+                const geometry = new BufferGeometry();
+
+                const { vertices } = data;
+
+                geometry.setAttribute(
+                  "position",
+                  new BufferAttribute(new Float32Array(vertices.flat(1)), 3)
+                );
+
+                geometry.applyMatrix4(new Matrix4().fromArray(transform));
+                curves.push(geometry);
+                break;
+              }
+              default: {
+                // Handle other geometry types if needed
+                break;
+              }
             }
-          })
-          .filter((g): g is BufferGeometry => g !== null);
-        setGeometries(gs);
+          } catch (error) {
+            console.error("Error processing geometry:", error);
+          }
+        });
+        
+        setMeshGeometries(meshes);
+        setCurveGeometries(curves);
       }).catch((error) => {
         console.error("Error evaluating modular:", error);
       });
@@ -182,18 +200,21 @@ function App() {
         camera={{ position: [4, -1, 8], fov: 35 }}
       >
         <color attach="background" args={["#d0d0d0"]} />
+        
         {/* <Sky distance={50000} sunPosition={[0, 1, 0]} inclination={0} azimuth={0.25} /> */}
-        {geometries.length > 0 && (
+        {(meshGeometries.length > 0 || curveGeometries.length > 0) && (
           <Stage
             intensity={0.5}
             preset="rembrandt"
             adjustCamera
-            shadows="contact"
+            // shadows="contact"
             environment="city"
           >
             <group rotation={new Euler(-Math.PI * 0.5, 0, 0)}>
-              {geometries.map((geometry, i) => (
-                <mesh key={i} geometry={geometry} castShadow>
+            
+              {/* Render mesh geometries */}
+              {meshGeometries.map((geometry, i) => (
+                <mesh key={`mesh-${i}`} geometry={geometry}>
                   <meshStandardMaterial 
                     color="#707d92"
                     roughness={0.2}
@@ -203,6 +224,28 @@ function App() {
                   />
                 </mesh>
               ))}
+              
+              {/* Render curve geometries */}
+              {curveGeometries.map((geometry, i) => {
+                // Extract points from geometry
+                const positions = geometry.attributes.position?.array;
+                const points: [number, number, number][] = [];
+                
+                if (positions) {
+                  for (let j = 0; j < positions.length; j += 3) {
+                    points.push([positions[j], positions[j + 1], positions[j + 2]]);
+                  }
+                }
+                
+                return (
+                  <Line
+                    key={`curve-${i}`}
+                    points={points}
+                    color="#3c4c5c"
+                    lineWidth={1}
+                  />
+                );
+              })}
             </group>
           </Stage>
         )}
