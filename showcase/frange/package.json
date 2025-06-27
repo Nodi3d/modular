@@ -12,6 +12,7 @@
   "dependencies": {
     "@react-three/drei": "^9.115.0",
     "@react-three/fiber": "^8.17.10",
+    "dxf-writer": "^1.18.4",
     "leva": "^0.9.35",
     "nodi-modular": "^0.0.20",
     "react": "^18.3.1",

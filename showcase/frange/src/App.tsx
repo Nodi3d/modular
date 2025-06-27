@@ -1,11 +1,12 @@
 import { OrbitControls, Sky, Stage, Line, Grid } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
-import { useControls } from "leva";
+import { useControls, button } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
 import init, { Modular, NodeInterop } from "nodi-modular";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { BufferAttribute, BufferGeometry, DoubleSide, Euler, Matrix4 } from "three";
 import frange from "./frange.json";
+import Drawing from "dxf-writer";
 
 function App() {
   const [modular, setModular] = useState<Modular | null>(null);
@@ -106,8 +107,54 @@ function App() {
     [modular, evaluate]
   );
 
+  const exportToDxf = useCallback(() => {
+    if (curveGeometries.length === 0) {
+      alert("No curves to export!");
+      return;
+    }
+
+    const drawing = new Drawing();
+    
+    // Add each curve as a polyline to the DXF
+    curveGeometries.forEach((geometry, index) => {
+      const positions = geometry.attributes.position?.array;
+      if (!positions) return;
+
+      const points: [number, number][] = [];
+      
+      // Extract points from geometry (convert 3D to 2D by dropping Z coordinate)
+      for (let i = 0; i < positions.length; i += 3) {
+        points.push([positions[i], positions[i + 1]]);
+      }
+
+      // Add layer for this curve
+      const layerName = `Curve_${index}`;
+      drawing.addLayer(layerName, Drawing.ACI.CYAN, 'CONTINUOUS');
+      drawing.setActiveLayer(layerName);
+
+      // Add polyline to DXF
+      if (points.length > 1) {
+        drawing.drawPolyline(points, false); // false = not closed
+      }
+    });
+
+    // Generate DXF content
+    const dxfContent = drawing.toDxfString();
+    
+    // Create download link
+    const blob = new Blob([dxfContent], { type: 'application/dxf' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'curves.dxf';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  }, [curveGeometries]);
+
   const params = useMemo(() => {
-    return nodes
+    const nodeParams = nodes
       .map((node) => {
         const { properties } = node;
         const property = properties.find((prop) => prop.name === "value");
@@ -116,7 +163,7 @@ function App() {
         }
 
         const { value } = property;
-        if (node.label !== undefined && value.type === "Number") {
+        if (node.label !== undefined && node.label.trim() !== "" && value.type === "Number") {
           const range = properties.find((prop) => prop.name === 'range');
           const step = properties.find((prop) => prop.name === 'step');
 
@@ -140,7 +187,7 @@ function App() {
         return null;
       })
       .reduce((acc, curr) => {
-        if (curr !== null) {
+        if (curr !== null && curr.name && curr.name.trim() !== "") {
           if ('min' in curr) {
             acc[curr.name] = {
               value: curr.value,
@@ -162,7 +209,13 @@ function App() {
         }
         return acc;
       }, {} as Schema);
-  }, [nodes, handleChange]);
+
+    // Add DXF export button
+    return {
+      ...nodeParams,
+      "Export DXF": button(exportToDxf),
+    };
+  }, [nodes, handleChange, exportToDxf]);
 
   useControls(params, [params]);
 
