@@ -9,7 +9,7 @@ This is `nodi-modular`, a WebAssembly-based JavaScript/TypeScript library for 3D
 **Key Components:**
 - Core library: Pre-built WebAssembly module with JS/TS bindings
 - Examples: React app, Vite example, and Deno script demonstrating usage
-- Showcase: Advanced React application (frange) with complex node graph visualization
+- Showcases: Advanced React applications (frange and foldingbox) with complex node graph visualization and DXF export
 
 ## Development Commands
 
@@ -36,6 +36,16 @@ npm run preview   # Preview production build
 ```bash
 cd showcase/frange
 npm install       # Note: Uses npm, similar to vite example
+npm run dev       # Vite dev server on http://localhost:5173
+npm run build     # TypeScript compile + Vite build
+npm run lint      # ESLint linting
+npm run preview   # Preview production build
+```
+
+### Foldingbox Showcase (`showcase/foldingbox/`)
+```bash
+cd showcase/foldingbox
+npm install       # Note: Uses npm, includes dxf-writer for export
 npm run dev       # Vite dev server on http://localhost:5173
 npm run build     # TypeScript compile + Vite build
 npm run lint      # ESLint linting
@@ -89,10 +99,11 @@ geometryIdentifiers.forEach(id => {
 - **Build Tools**: 
   - React example: Create React App
   - Vite example: Modern Vite with WASM and top-level await plugins
-  - Frange showcase: Vite with React, WASM, and specialized node graph features
+  - Showcases: Vite with React, WASM, and specialized node graph features
 - **3D Rendering**: Three.js via `@react-three/fiber` and `@react-three/drei`
 - **Interactive Controls**: Leva for parameter manipulation
-- **Styling**: Basic CSS (examples), Tailwind CSS (potential in showcase)
+- **Export Formats**: DXF export functionality in showcase applications (via dxf-writer)
+- **Styling**: Basic CSS (examples), Tailwind CSS (potential in showcases)
 
 ## Important Notes
 
@@ -104,8 +115,9 @@ geometryIdentifiers.forEach(id => {
 
 ## Development Setup Notes
 
-- **Vite Projects**: Both `examples/vite/` and `showcase/frange/` use Vite with WebAssembly plugins
-- **Graph Files**: Examples include `shell.json` and `brick-wall.json` for basic demos, `frange.json` for advanced showcase
+- **Vite Projects**: Both `examples/vite/` and both showcase applications use Vite with WebAssembly plugins
+- **Graph Files**: Examples include `shell.json` and `brick-wall.json` for basic demos, `frange.json` and `foldingbox.json` for advanced showcases
 - **WebAssembly Requirements**: Vite projects require `vite-plugin-wasm` and `vite-plugin-top-level-await` for proper WASM support
-- **Directory Structure**: Note that showcase is in `showcase/frange/` (singular), not `showcases/frange/` (plural)
-- **Package Management**: React example uses yarn, Vite examples use npm
+- **Directory Structure**: Showcases are in `showcase/frange/` and `showcase/foldingbox/` (singular), not `showcases/` (plural)
+- **Package Management**: React example uses yarn, all other projects use npm
+- **Geometry Support**: Showcases support both mesh and curve geometry visualization and export
