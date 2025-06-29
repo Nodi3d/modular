@@ -51,6 +51,10 @@ function App() {
                 }
 
                 geometry.applyMatrix4(new Matrix4().fromArray(transform));
+                
+                // Ensure consistent normal vectors for uniform shading
+                geometry.computeVertexNormals();
+                
                 meshes.push(geometry);
                 break;
               }
@@ -296,11 +300,13 @@ function App() {
               {meshGeometries.map((geometry, i) => (
                 <mesh key={`mesh-${i}`} geometry={geometry}>
                   <meshStandardMaterial 
-                    color="#dfd4c9"
-                    roughness={0.2}
-                    metalness={0.1}
-                    envMapIntensity={1.8}
+                    color="#a27f59"
+                    roughness={0.4}
+                    metalness={0.0}
+                    envMapIntensity={0.5}
                     side={DoubleSide}
+                    flatShading={true}
+                    toneMapped={false}
                   />
                 </mesh>
               ))}
