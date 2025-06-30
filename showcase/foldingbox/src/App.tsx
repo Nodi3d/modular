@@ -275,13 +275,14 @@ function App() {
         height: "100vh",
         display: "flex",
         justifyContent: "center",
+        position: "relative",
       }}
     >
       <Canvas
-        shadows
+        
         gl={{ antialias: false }}
         dpr={[1, 1.5]}
-        camera={{ position: [4, -1, 8], fov: 35 }}
+        camera={{ position: [-4, 4, -8], fov: 35 }}
       >
         <color attach="background" args={["#d0d0d0"]} />
         
@@ -291,10 +292,10 @@ function App() {
             intensity={0.5}
             preset="rembrandt"
             adjustCamera
-            // shadows="contact"
-            environment="city"
+            shadows={false}
+            // environment="city"
           >
-            <group rotation={new Euler(-Math.PI * 0.5, 0, 0)}>
+            <group position={[0, 0.5, 0]} rotation={new Euler(-Math.PI * 0.5, 0, 0)}>
             
               {/* Render mesh geometries */}
               {meshGeometries.map((geometry, i) => (
@@ -303,9 +304,8 @@ function App() {
                     color="#a27f59"
                     roughness={0.4}
                     metalness={0.0}
-                    envMapIntensity={0.5}
                     side={DoubleSide}
-                    flatShading={true}
+                    // flatShading={true}
                     toneMapped={false}
                   />
                 </mesh>
@@ -341,6 +341,7 @@ function App() {
           makeDefault
         />
       </Canvas>
+      
     </div>
   );
 }
