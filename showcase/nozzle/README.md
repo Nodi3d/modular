@@ -1,54 +1,44 @@
-# Nozzle Configurator
+# Nodi Modular Sample - Nozzle Configurator
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A 3D printer nozzle configurator built with the nodi-modular library, featuring interactive 3D visualization and parametric design capabilities for custom nozzle manufacturing.
 
-Currently, two official plugins are available:
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react/README.md) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+## Features
+![gif](/nozzle.gif)
 
-## Expanding the ESLint configuration
+- **Parametric Design**: Adjust nozzle dimensions including length, outer size, tip sizes, and needle length in real-time
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
 
-```js
-export default tseslint.config({
-  extends: [
-    // Remove ...tseslint.configs.recommended and replace with this
-    ...tseslint.configs.recommendedTypeChecked,
-    // Alternatively, use this for stricter rules
-    ...tseslint.configs.strictTypeChecked,
-    // Optionally, add this for stylistic rules
-    ...tseslint.configs.stylisticTypeChecked,
-  ],
-  languageOptions: {
-    // other options...
-    parserOptions: {
-      project: ['./tsconfig.node.json', './tsconfig.app.json'],
-      tsconfigRootDir: import.meta.dirname,
-    },
-  },
-})
+## Getting Started
+
+1. Install dependencies:
+```bash
+npm install
 ```
 
-You can also install [eslint-plugin-react-x](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://github.com/Rel1cx/eslint-react/tree/main/packages/plugins/eslint-plugin-react-dom) for React-specific lint rules:
-
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default tseslint.config({
-  plugins: {
-    // Add the react-x and react-dom plugins
-    'react-x': reactX,
-    'react-dom': reactDom,
-  },
-  rules: {
-    // other rules...
-    // Enable its recommended typescript rules
-    ...reactX.configs['recommended-typescript'].rules,
-    ...reactDom.configs.recommended.rules,
-  },
-})
+2. Start the development server:
+```bash
+npm run dev
 ```
+
+3. Open your browser and navigate to `http://localhost:5173`
+
+* Modeling part is done with following projects.
+(https://app.nodi3d.com/d7a4f0c8-4cf6-4b2c-bf17-f2756057f2a6)[https://app.nodi3d.com/d7a4f0c8-4cf6-4b2c-bf17-f2756057f2a6]
+
+## Available Scripts
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run preview` - Preview production build
+- `npm run lint` - Run ESLint
+
+## Tech Stack
+
+- **Frontend**: React 19 + TypeScript
+- **3D Rendering**: Three.js with @react-three/fiber and @react-three/drei
+- **Build Tool**: Vite with WASM and top-level await plugins
+- **UI Controls**: Custom sliders for precise parameter adjustment
+- **WebAssembly**: nodi-modular (v0.0.20) for computational geometry
+- **State Management**: Zustand for application state
+
