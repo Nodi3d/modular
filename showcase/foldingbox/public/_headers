@@ -29,13 +29,13 @@
   Content-Type: application/json
   Cache-Control: public, max-age=86400
 
-# Video files
-/*.mp4
-  Content-Type: video/mp4
+# 3D model files
+/*.gltf
+  Content-Type: model/gltf+json
   Cache-Control: public, max-age=31536000
 
-/*.gif
-  Content-Type: image/gif
+/*.glb
+  Content-Type: model/gltf-binary
   Cache-Control: public, max-age=31536000
 
 # Image files
