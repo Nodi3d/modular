@@ -282,7 +282,7 @@ function App() {
         
         gl={{ antialias: false }}
         dpr={[1, 1.5]}
-        camera={{ position: [-4, 4, -8], fov: 35 }}
+        camera={{ position: [50, 50, 50], fov: 35 }}
       >
         <color attach="background" args={["#d0d0d0"]} />
         
