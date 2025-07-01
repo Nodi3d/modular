@@ -53,7 +53,7 @@ This application uses the following Nodi project:
 1. **WebAssembly Initialization**: The app initializes the nodi-modular WASM module using top-level await
 2. **Graph Loading**: Loads the predefined frange node graph (frange.json) containing pipe flange geometry algorithms
 3. **Interactive Controls**: Leva automatically generates GUI controls for flange parameters (nominal diameter, bolt holes, thickness, etc.)
-4. **Real-time Updates**: Parameter changes trigger debounced graph re-evaluation to prevent UI freezing
+4. **Real-time Updates**: Parameter changes trigger graph re-evaluation
 5. **Geometry Processing**: Separates mesh geometries from curve geometries for optimized rendering
 6. **3D Visualization**: Renders geometries using Three.js with:
    - Mesh geometries: Flange body with realistic materials and lighting
