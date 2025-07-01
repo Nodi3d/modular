@@ -4,8 +4,8 @@ A Frange (pipe flange) component configurator built with the nodi-modular librar
 
 ## Features
 
-![frange](./public//frange.png)
-![frange](./public//frange.mp4)
+![frange](./public//frange.gif)
+
 - **Export DXF**: Download Frange technical drawings (3-view projections) in DXF format for manufacturing
 - **Adjust Size**: Modify nominal diameter, number of holes, and other flange parameters in real-time
 - **3D Visualization**: Interactive 3D rendering of both mesh geometries and construction curves

@@ -1,0 +1,20 @@
+name = "foldingbox-showcase"
+compatibility_date = "2024-06-30"
+pages_build_output_dir = "dist"
+
+[env.production]
+# Add your custom domain here when ready
+# route = "foldingbox.your-domain.com"
+
+[env.preview]
+# Preview environment settings
+# route = "foldingbox-preview.your-domain.com"
+
+# Build configuration for Cloudflare Pages
+[build]
+command = "npm run build"
+publish = "dist"
+
+# Environment variables (set these in Cloudflare dashboard)
+[vars]
+NODE_ENV = "production"

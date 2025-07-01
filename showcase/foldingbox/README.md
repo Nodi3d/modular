@@ -4,8 +4,7 @@ A packaging box (carton box) drawing generation application powered by Nodi-Modu
 
 ## Features
 
-![demo image](./public//foldingbox.png)
-![demo video](./public//foldingbox.mp4)
+![demo video](./public//foldingbox.gif)
 
 - **Export DXF**: Export box development drawings in DXF format for manufacturing
 - **Adjust W/H/D**: Freely adjust box width, depth, and height with real-time preview
