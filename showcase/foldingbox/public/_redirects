@@ -1,0 +1,14 @@
+# SPA fallback - redirect all routes to index.html for client-side routing
+/*    /index.html   200
+
+# Static assets should not be redirected
+/*.js     200
+/*.css    200
+/*.json   200
+/*.png    200
+/*.jpg    200
+/*.svg    200
+/*.ico    200
+/*.wasm   200
+/*.gltf   200
+/*.glb    200
