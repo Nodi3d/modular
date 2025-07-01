@@ -117,7 +117,7 @@ function App() {
           if (modular !== null && evaluateRef.current) {
             evaluateRef.current(modular);
           }
-        }, 150); // 150ms debounce delay
+        }, 0); // 150ms debounce delay
 
       } catch (error) {
         console.error("Error changing node property:", error);
