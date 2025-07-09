@@ -1,6 +1,11 @@
 /* tslint:disable */
 /* eslint-disable */
 export function do_nothing_just_tell_wasm_bindgen_to_generate_types(): void;
+/**
+ * Evaluation item interoperability type.
+ */
+export type Item = { variant: "Bool"; data: boolean } | { variant: "String"; data: string } | { variant: "Number"; data: number } | { variant: "Domain"; data: Domain } | { variant: "Vector3"; data: Vector3<number> } | { variant: "Matrix4"; data: Matrix4<number> } | { variant: "Complex"; data: Complex<number> } | { variant: "Point3"; data: Point3<number> } | { variant: "Plane"; data: Plane } | { variant: "GeometryTransform"; data: GeometryTransformInterop } | { variant: "MeshFace"; data: MeshTriangleFace };
+
 export interface GeometryTransformInterop {
     geometry: GeometryProxy;
     transform: TransformInterop;
@@ -8,13 +13,116 @@ export interface GeometryTransformInterop {
 
 export type NodeOutput = (Map<string, Item[]> | undefined)[];
 
-/**
- * Evaluation item interoperability type.
- */
-export type Item = { variant: "Bool"; data: boolean } | { variant: "String"; data: string } | { variant: "Number"; data: number } | { variant: "Domain"; data: Domain } | { variant: "Vector3"; data: Vector3<number> } | { variant: "Matrix4"; data: Matrix4<number> } | { variant: "Complex"; data: Complex<number> } | { variant: "Point3"; data: Point3<number> } | { variant: "Plane"; data: Plane } | { variant: "GeometryTransform"; data: GeometryTransformInterop } | { variant: "MeshFace"; data: MeshTriangleFace };
+export type GeometryInteropVec = GeometryInterop[];
 
-export interface GroupInteropHandle {
-    objects: GeometryInteropHandleProxy[];
+export type NodeConnectionInteropVec = NodeConnectionInterop[];
+
+export type NodePropertyInteropVec = NodePropertyInterop[];
+
+export type NodeInteropVec = NodeInterop[];
+
+export type EdgeInteropVec = EdgeInterop[];
+
+export interface GeometrySpreadsheet {
+    points: Point3<number>[];
+    curves: CurveProxy[];
+    surfaces: SurfaceProxy[];
+    meshes: MeshInterop[];
+}
+
+export interface DataTreeInterop {
+    branches: IndexMap<string, string[]>;
+}
+
+export interface DataTreeFormatInterop {
+    outputs: IndexMap<string, string>;
+}
+
+export interface MeshInteropHandle {
+    count: number;
+    vertices: number;
+    normals: number;
+    indices: IndicesInteropHandle | undefined;
+    transform: TransformInterop | undefined;
+}
+
+/**
+ * Options for adaptive tessellation to create geometry interoperability
+ */
+export interface AdaptiveTessellationOptions {
+    /**
+     * Whether to enable adaptive tessellation
+     */
+    enabled: boolean;
+    /**
+     * Tolerance for the normal vector: if the L2 norm of the normal vectors is below this value, the edge is considered flat
+     */
+    normTolerance: number;
+    /**
+     * Minimum number of divisions in u direction
+     */
+    minDivsU: number;
+    /**
+     * Minimum number of divisions in v direction
+     */
+    minDivsV: number;
+    /**
+     * Minimum depth for division
+     */
+    minDepth: number;
+    /**
+     * Maximum depth for division
+     */
+    maxDepth: number;
+}
+
+export type GeometryInteropHandleProxy = { variant: "Mesh"; data: MeshInteropHandle } | { variant: "Curve"; data: CurveInteropHandle } | { variant: "Group"; data: GroupInteropHandle };
+
+export interface PointListHandleUnit {
+    count: number;
+    points: number;
+}
+
+/**
+ * Point display handle for wasm interop
+ */
+export interface PointListDisplayHandle {
+    list: PointListHandleUnit[];
+    pointSize: number;
+}
+
+/**
+ * Vector display handle for wasm interop
+ * stride = 6 (3 for point, 3 for vector)
+ */
+export interface VectorDisplayHandle {
+    count: number;
+    vertices: number;
+}
+
+export type DisplayProxyHandle = { variant: "Vector"; data: VectorDisplayHandle } | { variant: "PointList"; data: PointListDisplayHandle };
+
+export type NodeSectionInterop = { type: "section"; content: NodeFolderInterop } | { type: "item"; content: NodeItemInterop };
+
+export interface NodeItemInterop {
+    key: string;
+    name: string;
+}
+
+export type NodeFolderInterop = IndexMap<string, NodeSectionInterop>;
+
+export interface NodeMapInterop {
+    folder: NodeFolderInterop;
+}
+
+/**
+ * Curve interop handle for wasm interop
+ * stride = 3 (x, y, z)
+ */
+export interface CurveInteropHandle {
+    count: number;
+    vertices: number;
+    transform: TransformInterop | undefined;
 }
 
 /**
@@ -22,25 +130,6 @@ export interface GroupInteropHandle {
  * Represents a 4x4 matrix as a 16-element array
  */
 export type TransformInterop = number[];
-
-export interface IndicesInteropHandle {
-    count: number;
-    indices: number;
-}
-
-/**
- * Interop struct for evaluation results
- */
-export interface EvaluationInterop {
-    /**
-     * Processed nodes in the latest evaluation
-     */
-    processedNodes: GraphNodeSet[];
-    /**
-     * Geometry identifiers in the latest evaluation
-     */
-    geometryIdentifiers: GeometryIdentifier[];
-}
 
 /**
  * Interop struct for node
@@ -107,41 +196,22 @@ export interface NodeMetaInterop {
     hasGeometry: boolean;
 }
 
-export interface EdgeInterop {
-    source: EdgeUnitInterop<OutputId>;
-    destination: EdgeUnitInterop<InputId>;
-    empty: boolean;
+/**
+ * Interop struct for evaluation results
+ */
+export interface EvaluationInterop {
+    /**
+     * Processed nodes in the latest evaluation
+     */
+    processedNodes: GraphNodeSet[];
+    /**
+     * Geometry identifiers in the latest evaluation
+     */
+    geometryIdentifiers: GeometryIdentifier[];
 }
 
-export interface EdgeUnitInterop<IO> {
-    node: NodeId;
-    io: IO;
-}
-
-export interface IOInterop {
-    id: string;
-    name: string;
-    accessType: AccessTypes;
-    hint: TypeHint | undefined;
-    connections: string[];
-}
-
-export interface DataTreeInterop {
-    branches: IndexMap<string, string[]>;
-}
-
-export interface DataTreeFormatInterop {
-    outputs: IndexMap<string, string>;
-}
-
-export type GeometryInteropHandleProxy = { variant: "Mesh"; data: MeshInteropHandle } | { variant: "Curve"; data: CurveInteropHandle } | { variant: "Group"; data: GroupInteropHandle };
-
-export interface MeshInteropHandle {
-    count: number;
-    vertices: number;
-    normals: number;
-    indices: IndicesInteropHandle | undefined;
-    transform: TransformInterop | undefined;
+export interface GroupInteropHandle {
+    objects: GeometryInteropHandleProxy[];
 }
 
 export interface NodeCreationSetting {
@@ -178,36 +248,6 @@ export interface NodePropertyInterop {
     disabled?: boolean;
 }
 
-/**
- * Options for adaptive tessellation to create geometry interoperability
- */
-export interface AdaptiveTessellationOptions {
-    /**
-     * Whether to enable adaptive tessellation
-     */
-    enabled: boolean;
-    /**
-     * Tolerance for the normal vector: if the L2 norm of the normal vectors is below this value, the edge is considered flat
-     */
-    normTolerance: number;
-    /**
-     * Minimum number of divisions in u direction
-     */
-    minDivsU: number;
-    /**
-     * Minimum number of divisions in v direction
-     */
-    minDivsV: number;
-    /**
-     * Minimum depth for division
-     */
-    minDepth: number;
-    /**
-     * Maximum depth for division
-     */
-    maxDepth: number;
-}
-
 export interface NodeConnectionInterop {
     outputNodeId: string;
     outputIndex: number;
@@ -216,58 +256,9 @@ export interface NodeConnectionInterop {
     inputConnectionIndex: number | undefined;
 }
 
-export interface PointListHandleUnit {
+export interface IndicesInteropHandle {
     count: number;
-    points: number;
-}
-
-/**
- * Point display handle for wasm interop
- */
-export interface PointListDisplayHandle {
-    list: PointListHandleUnit[];
-    pointSize: number;
-}
-
-/**
- * Vector display handle for wasm interop
- * stride = 6 (3 for point, 3 for vector)
- */
-export interface VectorDisplayHandle {
-    count: number;
-    vertices: number;
-}
-
-export type DisplayProxyHandle = { variant: "Vector"; data: VectorDisplayHandle } | { variant: "PointList"; data: PointListDisplayHandle };
-
-export interface GeometrySpreadsheet {
-    points: Point3<number>[];
-    curves: CurveProxy[];
-    surfaces: SurfaceProxy[];
-    meshes: MeshInterop[];
-}
-
-export type GeometryInteropVec = GeometryInterop[];
-
-export type NodeConnectionInteropVec = NodeConnectionInterop[];
-
-export type NodePropertyInteropVec = NodePropertyInterop[];
-
-export type NodeInteropVec = NodeInterop[];
-
-export type EdgeInteropVec = EdgeInterop[];
-
-export type NodeSectionInterop = { type: "section"; content: NodeFolderInterop } | { type: "item"; content: NodeItemInterop };
-
-export interface NodeItemInterop {
-    key: string;
-    name: string;
-}
-
-export type NodeFolderInterop = IndexMap<string, NodeSectionInterop>;
-
-export interface NodeMapInterop {
-    folder: NodeFolderInterop;
+    indices: number;
 }
 
 
@@ -302,14 +293,23 @@ export type Transform3<T = number> = FixedLengthArray<T, 16>;
 export type Matrix4<T = number> = FixedLengthArray<FixedLengthArray<T, 4>, 4>;
 
 
-/**
- * Curve interop handle for wasm interop
- * stride = 3 (x, y, z)
- */
-export interface CurveInteropHandle {
-    count: number;
-    vertices: number;
-    transform: TransformInterop | undefined;
+export interface IOInterop {
+    id: string;
+    name: string;
+    accessType: AccessTypes;
+    hint: TypeHint | undefined;
+    connections: string[];
+}
+
+export interface EdgeInterop {
+    source: EdgeUnitInterop<OutputId>;
+    destination: EdgeUnitInterop<InputId>;
+    empty: boolean;
+}
+
+export interface EdgeUnitInterop<IO> {
+    node: NodeId;
+    io: IO;
 }
 
 /**
@@ -334,7 +334,42 @@ export interface GeometryIdentifier {
     transform: TransformInterop;
 }
 
-export type GraphMappingTypes = "None" | "Bezier" | "Linear" | "Sine";
+export interface NodePropertyCategoryValue {
+    candidates: IndexMap<string, number>;
+    selected: number;
+}
+
+export interface NodePropertyRangeValue {
+    value: number;
+    min: number | undefined;
+    max: number | undefined;
+    step: number | undefined;
+}
+
+export type NodePropertyValue = { type: "Number"; content: number } | { type: "Range"; content: NodePropertyRangeValue } | { type: "Range2d"; content: [NodePropertyRangeValue, NodePropertyRangeValue] } | { type: "String"; content: string } | { type: "Bool"; content: boolean } | { type: "NumberVector"; content: number[] } | { type: "Category"; content: NodePropertyCategoryValue } | { type: "Vector2d"; content: [number, number] } | { type: "Vector3d"; content: [number, number, number] } | { type: "Point2d"; content: [number, number] } | { type: "Point3d"; content: [number, number, number] } | { type: "Points2d"; content: [number, number][] } | { type: "Buffer"; content: number[] };
+
+export type TypeHint = Internal;
+
+export type AccessTypes = "Item" | "List" | "Tree";
+
+/**
+ * Graph structure
+ */
+export interface Graph<T, U> {
+    /**
+     * Nodes in the graph
+     */
+    nodes: IndexMap<NodeId, Node<T, U>>;
+    /**
+     * nested graphs
+     */
+    sub_graphs?: IndexMap<SubGraphId, SubGraph<T, U>>;
+}
+
+export interface Prune<T, U> {
+    connectedComponents: ConnectedComponents<T, U>[];
+    bypass: Connection[] | undefined;
+}
 
 export interface Node<T> {
     id: NodeId;
@@ -351,18 +386,15 @@ export type OutputIOManager = IOManager<OutputId, InputId>;
 
 export type InputIOManager = IOManager<InputId, OutputId>;
 
-/**
- * Graph structure
- */
-export interface Graph<T, U> {
-    /**
-     * Nodes in the graph
-     */
-    nodes: IndexMap<NodeId, Node<T, U>>;
-    /**
-     * nested graphs
-     */
-    sub_graphs?: IndexMap<SubGraphId, SubGraph<T, U>>;
+export interface Connection {
+    source: NodeParameter<OutputId>;
+    destination: NodeParameter<InputId>;
+}
+
+export interface NodeParameter<T> {
+    nodeId: NodeId;
+    parameterId: T;
+    parameterIndex: number;
 }
 
 export interface SubGraphIdSet {
@@ -370,19 +402,14 @@ export interface SubGraphIdSet {
     instanceId: SubGraphInstanceId;
 }
 
-export interface NodePropertyCategoryValue {
-    candidates: Map<string, number>;
-    selected: number;
+export interface ConnectedComponentNode {
+    sources: NodeId[];
+    destinations: NodeId[];
 }
 
-export interface NodePropertyRangeValue {
-    value: number;
-    min: number | undefined;
-    max: number | undefined;
-    step: number | undefined;
+export interface ConnectedComponents<T, U> {
+    nodes: IndexMap<NodeId, ConnectedComponentNode<T, U>>;
 }
-
-export type NodePropertyValue = { type: "Number"; content: number } | { type: "Range"; content: NodePropertyRangeValue } | { type: "Range2d"; content: [NodePropertyRangeValue, NodePropertyRangeValue] } | { type: "String"; content: string } | { type: "Bool"; content: boolean } | { type: "NumberVector"; content: number[] } | { type: "Category"; content: NodePropertyCategoryValue } | { type: "Vector2d"; content: [number, number] } | { type: "Vector3d"; content: [number, number, number] } | { type: "Point2d"; content: [number, number] } | { type: "Point3d"; content: [number, number, number] } | { type: "Points2d"; content: [number, number][] } | { type: "Buffer"; content: number[] };
 
 /**
  * Defines the dynamics of an IO parameter.
@@ -396,19 +423,6 @@ export interface IOVariables {
 }
 
 /**
- * A set of node id and instance id
- */
-export interface GraphNodeSet {
-    subGraphIdSet: SubGraphIdSet | undefined;
-    nodeId: NodeId;
-}
-
-export interface Prune<T, U> {
-    connectedComponents: ConnectedComponents<T, U>[];
-    bypass: Connection[] | undefined;
-}
-
-/**
  * A parameter for an input or output of a node.
  */
 export interface IOParameter<T, U> {
@@ -419,35 +433,19 @@ export interface IOParameter<T, U> {
     connections: U[];
 }
 
+/**
+ * A set of node id and instance id
+ */
+export interface GraphNodeSet {
+    subGraphIdSet: SubGraphIdSet | undefined;
+    nodeId: NodeId;
+}
+
 export interface IOManager<T, U> {
     parameters: IOParameter<T, U>[];
 }
 
-export interface Connection {
-    source: NodeParameter<OutputId>;
-    destination: NodeParameter<InputId>;
-}
-
-export interface NodeParameter<T> {
-    nodeId: NodeId;
-    parameterId: T;
-    parameterIndex: number;
-}
-
-export interface ConnectedComponentNode {
-    sources: NodeId[];
-    destinations: NodeId[];
-}
-
-export interface ConnectedComponents<T, U> {
-    nodes: IndexMap<NodeId, ConnectedComponentNode<T, U>>;
-}
-
 export type GraphVariant = "Root" | { SubGraph: SubGraphId };
-
-export type TypeHint = Internal;
-
-export type AccessTypes = "Item" | "List" | "Tree";
 
 /**
  * A sub graph is a graph that is a part of a larger graph
@@ -466,6 +464,8 @@ export interface SubGraph<T, U> {
      */
     instances: SubGraphInstanceId[];
 }
+
+export type GraphMappingTypes = "None" | "Bezier" | "Linear" | "Sine";
 
 
 export type NurbsCurve3D<T = number> = {
@@ -871,8 +871,8 @@ export interface InitOutput {
   readonly __externref_table_dealloc: (a: number) => void;
   readonly __externref_drop_slice: (a: number, b: number) => void;
   readonly __wbindgen_free: (a: number, b: number, c: number) => void;
-  readonly closure864_externref_shim: (a: number, b: number, c: any) => void;
-  readonly closure3551_externref_shim: (a: number, b: number, c: any, d: any) => void;
+  readonly closure874_externref_shim: (a: number, b: number, c: any) => void;
+  readonly closure3561_externref_shim: (a: number, b: number, c: any, d: any) => void;
   readonly __wbindgen_start: () => void;
 }
 
