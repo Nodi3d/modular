@@ -3,7 +3,7 @@ import { Canvas } from "@react-three/fiber";
 import { useControls, button } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
 import init, { Modular, NodeInterop } from "nodi-modular";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BufferAttribute, BufferGeometry, DoubleSide, Euler, Matrix4 } from "three";
 import frange from "./frange.json";
 import Drawing from "dxf-writer";
@@ -13,6 +13,8 @@ function App() {
   const [nodes, setNodes] = useState<NodeInterop[]>([]);
   const [meshGeometries, setMeshGeometries] = useState<BufferGeometry[]>([]);
   const [curveGeometries, setCurveGeometries] = useState<BufferGeometry[]>([]);
+  const debounceTimeoutRef = useRef<number | null>(null);
+  const evaluateRef = useRef<(m: Modular) => void>();
 
   const evaluate = useCallback(
     (m: Modular) => {
@@ -86,9 +88,13 @@ function App() {
     []
   );
 
+  // Keep evaluate function reference up to date
+  evaluateRef.current = evaluate;
+
   const handleChange = useCallback(
     (id: string, value: number) => {
       try {
+        // Immediately update the property for responsive UI
         modular?.changeNodeProperty(id, {
           name: "value",
           value: {
@@ -96,15 +102,25 @@ function App() {
             content: value,
           },
         });
-        if (modular !== null) {
-          evaluate(modular);
+
+        // Clear existing timeout
+        if (debounceTimeoutRef.current) {
+          clearTimeout(debounceTimeoutRef.current);
         }
+
+        // Debounce the evaluation to prevent excessive calls
+        debounceTimeoutRef.current = setTimeout(() => {
+          if (modular !== null && evaluateRef.current) {
+            evaluateRef.current(modular);
+          }
+        }, 0); // 150ms debounce delay
+
       } catch (error) {
         console.error("Error changing node property:", error);
         console.log("Node ID:", id, "Value:", value);
       }
     },
-    [modular, evaluate]
+    [modular]
   );
 
   const exportToDxf = useCallback(() => {
@@ -237,6 +253,15 @@ function App() {
     }
   }, [modular, evaluate]);
 
+  // Cleanup debounce timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeoutRef.current) {
+        clearTimeout(debounceTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <div
       style={{
@@ -250,7 +275,7 @@ function App() {
         shadows
         gl={{ antialias: false }}
         dpr={[1, 1.5]}
-        camera={{ position: [4, -1, 8], fov: 35 }}
+        camera={{ position: [-80, 80, -80], fov: 35 }}
       >
         <color attach="background" args={["#d0d0d0"]} />
         
@@ -308,6 +333,7 @@ function App() {
           makeDefault
         />
       </Canvas>
+      
     </div>
   );
 }
