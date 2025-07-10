@@ -168,8 +168,16 @@ function App() {
     }
     
     const move = gcodeData.moves[currentMoveIndex];
-    // Scale down coordinates to fit better in the scene
-    return new Vector3(move.x / 50, move.z / 50, move.y / 50);
+    // Since the parent group is rotated by -90 degrees around X axis,
+    // we don't need to apply the rotation here - the KukaArm is inside the rotated group
+    // and will use local coordinates
+    const targetPos = new Vector3(move.x, move.y, move.z);
+    
+    // Debug: Log G-code position
+    console.log(`[G-code Move ${currentMoveIndex}] Raw G-code position:`, move);
+    console.log(`[G-code Move ${currentMoveIndex}] Target position (local to rotated group):`, targetPos);
+    
+    return targetPos;
   }, [gcodeData, currentMoveIndex]);
 
   const handleChange = useCallback(
@@ -386,6 +394,8 @@ function App() {
             environment="city"
           >
             <group rotation={new Euler(-Math.PI * 0.5, 0, 0)}>
+              {/* Note: This rotation rotates the entire scene by -90 degrees around X-axis */}
+              {/* This transforms: Y -> -Z, Z -> Y */}
             
               {/* Render mesh geometries */}
               {meshGeometries.map((geometry, i) => (
@@ -411,6 +421,12 @@ function App() {
                 if (positions) {
                   for (let j = 0; j < positions.length; j += 3) {
                     points.push([positions[j], positions[j + 1], positions[j + 2]]);
+                  }
+                  
+                  // Debug: Log first few points of each curve
+                  if (i === 0 && points.length > 0) {
+                    console.log(`[Curve ${i}] First 5 points:`, points.slice(0, 5));
+                    console.log(`[Curve ${i}] Total points:`, points.length);
                   }
                 }
                 
