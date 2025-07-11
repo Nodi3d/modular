@@ -6,10 +6,9 @@ import init, { Modular, NodeInterop } from "nodi-modular";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BufferAttribute, BufferGeometry, DoubleSide, Euler, Matrix4, Vector3 } from "three";
 import polygonstool from "./polygonstool.json";
-import Drawing from "dxf-writer";
 import { KukaArm } from "./components/KukaArm";
 import { AnimationControls } from "./components/AnimationControls";
-import { loadGcodeFile, GcodeMove, ParsedGcode } from "./utils/gcodeParser";
+import { loadGcodeFile, parseGcode, ParsedGcode } from "./utils/gcodeParser";
 
 function App() {
   const [modular, setModular] = useState<Modular | null>(null);
@@ -25,6 +24,7 @@ function App() {
   const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
   const [animationSpeed, setAnimationSpeed] = useState(1.0);
   const animationRef = useRef<number | null>(null);
+  const gcodeTextRef = useRef<string>("");
 
   const evaluate = useCallback(
     (m: Modular) => {
@@ -95,6 +95,33 @@ function App() {
         
         setMeshGeometries(meshes);
         setCurveGeometries(curves);
+        
+        // Check for 'gcode' node and process its output
+        try {
+          const gcodeNode = m.getNodes().find(node => node.label === 'gcode');
+          if (gcodeNode) {
+            console.log('Found gcode node:', gcodeNode);
+            
+            // Get the output of the gcode node
+            const gcodeOutput = m.getNodeOutput(gcodeNode.id);
+            const textGcode = gcodeOutput![0]!.get("0")![0]!.data;
+            
+            
+            
+                  if (textGcode && typeof textGcode === 'string') {
+                    
+                    const parsedGcode = parseGcode(textGcode);
+                    setGcodeData(parsedGcode);
+                    gcodeTextRef.current = textGcode;
+                    console.log('Gcode data updated from node:', parsedGcode.totalMoves, 'moves');
+                  }
+                
+                
+                
+          }
+        } catch (error) {
+          console.error("Error processing gcode node:", error);
+        }
       }).catch((error) => {
         console.error("Error evaluating modular:", error);
       });
@@ -140,6 +167,25 @@ function App() {
 
   const handleMoveChange = useCallback((moveIndex: number) => {
     setCurrentMoveIndex(moveIndex);
+  }, []);
+
+  // Export G-code function
+  const exportGcode = useCallback(() => {
+    if (!gcodeTextRef.current) {
+      alert("No G-code data to export!");
+      return;
+    }
+
+    // Create download link for G-code
+    const blob = new Blob([gcodeTextRef.current], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `export-${new Date().toISOString().slice(0, 19).replace(/[:.]/g, '-')}.gcode`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
   }, []);
 
   // Animation loop
@@ -212,51 +258,6 @@ function App() {
     [modular]
   );
 
-  const exportToDxf = useCallback(() => {
-    if (curveGeometries.length === 0) {
-      alert("No curves to export!");
-      return;
-    }
-
-    const drawing = new Drawing();
-    
-    // Add each curve as a polyline to the DXF
-    curveGeometries.forEach((geometry, index) => {
-      const positions = geometry.attributes.position?.array;
-      if (!positions) return;
-
-      const points: [number, number][] = [];
-      
-      // Extract points from geometry (convert 3D to 2D by dropping Z coordinate)
-      for (let i = 0; i < positions.length; i += 3) {
-        points.push([positions[i], positions[i + 1]]);
-      }
-
-      // Add layer for this curve
-      const layerName = `Curve_${index}`;
-      drawing.addLayer(layerName, Drawing.ACI.CYAN, 'CONTINUOUS');
-      drawing.setActiveLayer(layerName);
-
-      // Add polyline to DXF
-      if (points.length > 1) {
-        drawing.drawPolyline(points, false); // false = not closed
-      }
-    });
-
-    // Generate DXF content
-    const dxfContent = drawing.toDxfString();
-    
-    // Create download link
-    const blob = new Blob([dxfContent], { type: 'application/dxf' });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = 'curves.dxf';
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
-  }, [curveGeometries]);
 
   const params = useMemo(() => {
     const nodeParams = nodes
@@ -315,12 +316,12 @@ function App() {
         return acc;
       }, {} as Schema);
 
-    // Add DXF export button
+    // Add Export G-code button
     return {
       ...nodeParams,
-      "Export DXF": button(exportToDxf),
+      "Export G-code": button(exportGcode),
     };
-  }, [nodes, handleChange, exportToDxf]);
+  }, [nodes, handleChange, exportGcode]);
 
   useControls(params, [params]);
 
