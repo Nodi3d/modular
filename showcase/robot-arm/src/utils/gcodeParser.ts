@@ -1,4 +1,4 @@
-import { Vector3 } from 'three';
+import { Vector3, BufferGeometry } from 'three';
 
 export interface GcodeMove {
   x: number;
@@ -78,6 +78,41 @@ export function parseGcode(gcodeText: string): ParsedGcode {
     }
   }
 
+  return {
+    moves,
+    totalMoves: moves.length,
+    bounds: {
+      min: new Vector3(minX, minY, minZ),
+      max: new Vector3(maxX, maxY, maxZ)
+    }
+  };
+}
+
+export function convertCurveToGcodeMoves(curves: BufferGeometry[]): ParsedGcode {
+  const moves: GcodeMove[] = [];
+  let minX = Infinity, minY = Infinity, minZ = Infinity;
+  let maxX = -Infinity, maxY = -Infinity, maxZ = -Infinity;
+  
+  curves.forEach(geometry => {
+    const positions = geometry.attributes.position?.array;
+    if (positions) {
+      for (let i = 0; i < positions.length; i += 3) {
+        const x = positions[i];
+        const y = positions[i + 1];
+        const z = positions[i + 2];
+        
+        moves.push({ x, y, z });
+        
+        minX = Math.min(minX, x);
+        maxX = Math.max(maxX, x);
+        minY = Math.min(minY, y);
+        maxY = Math.max(maxY, y);
+        minZ = Math.min(minZ, z);
+        maxZ = Math.max(maxZ, z);
+      }
+    }
+  });
+  
   return {
     moves,
     totalMoves: moves.length,

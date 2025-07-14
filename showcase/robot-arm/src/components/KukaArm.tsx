@@ -12,32 +12,20 @@ export function KukaArm({ targetPosition, isAnimating = false }: KukaArmProps) {
   const armRef = useRef<Group>(null);
   const endEffectorRef = useRef<Group>(null);
 
-  // For now, create a simple placeholder robot arm structure
-  // This will be replaced with the actual KUKA GLTF model
+  // Placeholder robot arm structure - will be replaced with actual KUKA GLTF model
   
-  useFrame((state, delta) => {
+  useFrame((_, delta) => {
     if (isAnimating && targetPosition && endEffectorRef.current) {
       // Simple linear interpolation to target position
       const currentPos = endEffectorRef.current.position;
       const lerpFactor = delta * 2; // Adjust animation speed
-      
-      // Debug: Log positions before interpolation (only log occasionally to reduce noise)
-      if (Math.random() < 0.05) { // Log 5% of frames
-        const worldPos = new Vector3();
-        endEffectorRef.current.getWorldPosition(worldPos);
-        console.log('[KukaArm Debug]');
-        console.log('  End Effector World Position:', worldPos);
-        console.log('  Target Position (local):', targetPosition);
-        console.log('  Current Local Position:', currentPos.clone());
-        console.log('  Distance to target:', currentPos.distanceTo(targetPosition));
-      }
       
       currentPos.lerp(targetPosition, lerpFactor);
     }
   });
 
   return (
-    <group ref={armRef} position={[-5, 0, 0]} >
+    <group ref={armRef}>
       {/* Placeholder robot arm structure */}
       {/* Base */}
       <Box position={[0, 0.5, 0]} args={[2, 1, 2]}>

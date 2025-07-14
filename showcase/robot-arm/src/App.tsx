@@ -8,7 +8,7 @@ import { BufferAttribute, BufferGeometry, DoubleSide, Euler, Matrix4, Vector3 } 
 import polygonstool from "./polygonstool.json";
 import { KukaArm } from "./components/KukaArm";
 import { AnimationControls } from "./components/AnimationControls";
-import { loadGcodeFile, parseGcode, ParsedGcode } from "./utils/gcodeParser";
+import { ParsedGcode, convertCurveToGcodeMoves } from "./utils/gcodeParser";
 
 function App() {
   const [modular, setModular] = useState<Modular | null>(null);
@@ -96,28 +96,23 @@ function App() {
         setMeshGeometries(meshes);
         setCurveGeometries(curves);
         
-        // Check for 'gcode' node and process its output
+        // Use curve-based gcode data for animation
+        if (curves.length > 0) {
+          const curveBasedGcode = convertCurveToGcodeMoves(curves);
+          setGcodeData(curveBasedGcode);
+        }
+        
+        // Check for 'gcode' node and process its output (for export)
         try {
           const gcodeNode = m.getNodes().find(node => node.label === 'gcode');
           if (gcodeNode) {
-            console.log('Found gcode node:', gcodeNode);
-            
             // Get the output of the gcode node
             const gcodeOutput = m.getNodeOutput(gcodeNode.id);
             const textGcode = gcodeOutput![0]!.get("0")![0]!.data;
             
-            
-            
-                  if (textGcode && typeof textGcode === 'string') {
-                    
-                    const parsedGcode = parseGcode(textGcode);
-                    setGcodeData(parsedGcode);
-                    gcodeTextRef.current = textGcode;
-                    console.log('Gcode data updated from node:', parsedGcode.totalMoves, 'moves');
-                  }
-                
-                
-                
+            if (textGcode && typeof textGcode === 'string') {
+              gcodeTextRef.current = textGcode;
+            }
           }
         } catch (error) {
           console.error("Error processing gcode node:", error);
@@ -132,20 +127,6 @@ function App() {
   // Keep evaluate function reference up to date
   evaluateRef.current = evaluate;
 
-  // Load Gcode data
-  useEffect(() => {
-    const loadGcode = async () => {
-      try {
-        const data = await loadGcodeFile('/polygonstool.gcode');
-        setGcodeData(data);
-        console.log('Gcode loaded:', data.totalMoves, 'moves');
-      } catch (error) {
-        console.error('Failed to load Gcode:', error);
-      }
-    };
-    
-    loadGcode();
-  }, []);
 
   // Animation control functions
   const startAnimation = useCallback(() => {
@@ -219,9 +200,6 @@ function App() {
     // and will use local coordinates
     const targetPos = new Vector3(move.x, move.y, move.z);
     
-    // Debug: Log G-code position
-    console.log(`[G-code Move ${currentMoveIndex}] Raw G-code position:`, move);
-    console.log(`[G-code Move ${currentMoveIndex}] Target position (local to rotated group):`, targetPos);
     
     return targetPos;
   }, [gcodeData, currentMoveIndex]);
@@ -252,7 +230,6 @@ function App() {
 
       } catch (error) {
         console.error("Error changing node property:", error);
-        console.log("Node ID:", id, "Value:", value);
       }
     },
     [modular]
@@ -424,11 +401,6 @@ function App() {
                     points.push([positions[j], positions[j + 1], positions[j + 2]]);
                   }
                   
-                  // Debug: Log first few points of each curve
-                  if (i === 0 && points.length > 0) {
-                    console.log(`[Curve ${i}] First 5 points:`, points.slice(0, 5));
-                    console.log(`[Curve ${i}] Total points:`, points.length);
-                  }
                 }
                 
                 return (
