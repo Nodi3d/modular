@@ -1,4 +1,4 @@
-import { OrbitControls, Sky, Stage, Line, Grid } from "@react-three/drei";
+import { OrbitControls, Stage, Line } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useControls, button } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
@@ -26,6 +26,9 @@ function App() {
   const [animationProgress, setAnimationProgress] = useState(0); // 0-1 continuous progress
   const animationRef = useRef<number | null>(null);
   const gcodeTextRef = useRef<string>("");
+  
+  // IK configuration state (now always true since we only have IK implementation)
+  const useIK = true;
 
   const evaluate = useCallback(
     (m: Modular) => {
@@ -154,6 +157,18 @@ function App() {
       setAnimationProgress(moveIndex / (gcodeData.totalMoves - 1));
     }
   }, [gcodeData]);
+  
+  // IK configuration change handler
+  
+  // IK solver statistics update handler (for future use)
+  // const handleIKStatsUpdate = useCallback((stats: {
+  //   lastSolveTime: number;
+  //   convergenceAchieved: boolean;
+  //   iterationsUsed: number;
+  //   endEffectorError: number;
+  // }) => {
+  //   setIkSolverStats(stats);
+  // }, []);
 
   // Export G-code function
   const exportGcode = useCallback(() => {
@@ -313,12 +328,16 @@ function App() {
         return acc;
       }, {} as Schema);
 
-    // Add Export G-code button
+    // Add Export G-code button and IK toggle
     return {
       ...nodeParams,
       "Export G-code": button(exportGcode),
+      "Use IK Solver": {
+        value: useIK,
+        onChange: () => {}
+      },
     };
-  }, [nodes, handleChange, exportGcode]);
+  }, [nodes, handleChange, exportGcode, useIK]);
 
   useControls(params, [params]);
 
@@ -439,7 +458,7 @@ function App() {
                 return null;
               })}
               
-              {/* KUKA Robot Arm */}
+              {/* KUKA Robot Arm with IK */}
               <KukaArm 
                 targetPosition={currentTargetPosition}
                 isAnimating={isAnimating}

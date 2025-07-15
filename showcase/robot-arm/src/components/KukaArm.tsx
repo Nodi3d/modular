@@ -1,7 +1,10 @@
-import { useRef } from 'react';
+import { useRef, useEffect, useState } from 'react';
 import { Group, Vector3 } from 'three';
 import { useFrame } from '@react-three/fiber';
-import { Box, Line } from '@react-three/drei';
+import { Line } from '@react-three/drei';
+import { URDFParser } from '../utils/urdfParser';
+import { RobotBuilder, Robot } from '../utils/robotBuilder';
+import { CCDIKSolver } from '../utils/ccdikSolver';
 
 interface KukaArmProps {
   targetPosition?: Vector3;
@@ -12,14 +15,53 @@ interface KukaArmProps {
 
 export function KukaArm({ targetPosition, isAnimating = false, allPositions, animationProgress = 0 }: KukaArmProps) {
   const armRef = useRef<Group>(null);
-  const endEffectorRef = useRef<Group>(null);
+  // endEffectorRef is managed internally by the robot model
+  const [robot, setRobot] = useState<Robot | null>(null);
+  const [ikSolver] = useState(() => new CCDIKSolver(10, 0.1));
+  const [isRobotLoaded, setIsRobotLoaded] = useState(false);
 
-  // Placeholder robot arm structure - will be replaced with actual KUKA GLTF model
+  // Load KUKA robot from URDF
+  useEffect(() => {
+    const loadRobot = async () => {
+      try {
+        const response = await fetch('/kuka_lwr/urdf/kuka_lwr.URDF');
+        const urdfContent = await response.text();
+        
+        const robotDescription = URDFParser.parseURDF(urdfContent);
+        const robotBuilder = new RobotBuilder();
+        const builtRobot = await robotBuilder.buildRobot(robotDescription);
+        
+        setRobot(builtRobot);
+        setIsRobotLoaded(true);
+        
+        // Add robot to scene
+        if (armRef.current) {
+          armRef.current.add(builtRobot.rootGroup);
+        }
+      } catch (error) {
+        console.error('Failed to load KUKA robot:', error);
+        // Show more detailed error information
+        if (error instanceof Error) {
+          console.error('Error details:', error.message);
+          console.error('Stack trace:', error.stack);
+        }
+      }
+    };
+
+    loadRobot();
+  }, []);
   
-  useFrame((_, delta) => {
-    if (isAnimating && endEffectorRef.current) {
+  // Robot end effector is managed internally by the robot model
+  useEffect(() => {
+    // Robot end effector is managed internally in the robot model
+  }, [robot]);
+
+  useFrame(() => {
+    if (isAnimating && robot && isRobotLoaded) {
+      let targetPos: Vector3 | null = null;
+      
       if (allPositions && allPositions.length > 1) {
-        // Smooth path following using all positions
+        // Calculate target position based on animation progress
         const totalPoints = allPositions.length;
         const currentIndex = Math.floor(animationProgress * (totalPoints - 1));
         const nextIndex = Math.min(currentIndex + 1, totalPoints - 1);
@@ -28,30 +70,24 @@ export function KukaArm({ targetPosition, isAnimating = false, allPositions, ani
         if (currentIndex < totalPoints - 1) {
           const currentPoint = allPositions[currentIndex];
           const nextPoint = allPositions[nextIndex];
-          const interpolatedPos = currentPoint.clone().lerp(nextPoint, localProgress);
-          
-          // Smooth movement towards interpolated position
-          const currentPos = endEffectorRef.current.position;
-          const lerpFactor = delta * 8; // Smooth following
-          currentPos.lerp(interpolatedPos, lerpFactor);
+          targetPos = currentPoint.clone().lerp(nextPoint, localProgress);
+        } else {
+          targetPos = allPositions[totalPoints - 1];
         }
       } else if (targetPosition) {
-        // Fallback to single target mode
-        const currentPos = endEffectorRef.current.position;
-        const lerpFactor = delta * 5;
-        const distance = currentPos.distanceTo(targetPosition);
-        if (distance < 0.1) {
-          currentPos.copy(targetPosition);
-        } else {
-          currentPos.lerp(targetPosition, lerpFactor);
-        }
+        targetPos = targetPosition;
+      }
+      
+      // Use inverse kinematics to solve for target position
+      if (targetPos) {
+        ikSolver.solve(robot, targetPos);
       }
     }
   });
   
   // Render progressive curve when animating
   const renderProgressiveCurve = () => {
-    if (isAnimating && allPositions && allPositions.length > 1 && endEffectorRef.current) {
+    if (isAnimating && allPositions && allPositions.length > 1 && robot && robot.endEffector) {
       const totalPoints = allPositions.length;
       
       // Get approximate progress to limit search range
@@ -73,7 +109,8 @@ export function KukaArm({ targetPosition, isAnimating = false, allPositions, ani
         return Math.max(0, Math.min(maxIndex, positions.length - 1));
       };
       
-      const currentPos = endEffectorRef.current.position;
+      const currentPos = new Vector3();
+      robot.endEffector.getWorldPosition(currentPos);
       const lastPassedIndex = findLastPassedPoint(currentPos, allPositions, approximateIndex);
       
       const visiblePoints: [number, number, number][] = [];
@@ -104,76 +141,27 @@ export function KukaArm({ targetPosition, isAnimating = false, allPositions, ani
     <group ref={armRef}>
       {/* Progressive curve visualization */}
       {renderProgressiveCurve()}
-      {/* Placeholder robot arm structure */}
-      {/* Base */}
-      <Box position={[0, 0.5, 0]} args={[2, 1, 2]}>
-        <meshStandardMaterial color="#2c3e50" />
-      </Box>
       
-      {/* Joint 1 - Base rotation */}
-      <group position={[0, 1, 0]}>
-        <Box position={[0, 0.5, 0]} args={[0.5, 1, 0.5]}>
-          <meshStandardMaterial color="#34495e" />
-        </Box>
-        
-        {/* Arm Link 1 */}
-        <group position={[0, 1, 0]}>
-          <Box position={[1, 0, 0]} args={[2, 0.3, 0.3]}>
-            <meshStandardMaterial color="#e74c3c" />
-          </Box>
-          
-          {/* Joint 2 */}
-          <group position={[2, 0, 0]}>
-            <Box position={[0, 0, 0]} args={[0.3, 0.5, 0.3]}>
-              <meshStandardMaterial color="#34495e" />
-            </Box>
-            
-            {/* Arm Link 2 */}
-            <group position={[0, 0, 0]}>
-              <Box position={[0.75, 0, 0]} args={[1.5, 0.25, 0.25]}>
-                <meshStandardMaterial color="#f39c12" />
-              </Box>
-              
-              {/* End Effector */}
-              <group ref={endEffectorRef} position={[1.5, 0, 0]}>
-                <Box position={[0.25, 0, 0]} args={[0.5, 0.2, 0.2]}>
-                  <meshStandardMaterial color="#27ae60" />
-                </Box>
-                
-                {/* 3D Print Nozzle */}
-                <Box position={[0.5, -0.2, 0]} args={[0.1, 0.4, 0.1]}>
-                  <meshStandardMaterial color="#e67e22" />
-                </Box>
-                
-                {/* Current End Effector Position Marker */}
-                <Box position={[0, 0, 0]} args={[2, 2, 2]}>
-                  <meshStandardMaterial color="#ff0000" emissive="#ff0000" emissiveIntensity={0.5} />
-                </Box>
-              </group>
-            </group>
-          </group>
+      {/* Loading indicator */}
+      {!isRobotLoaded && (
+        <group>
+          <mesh>
+            <boxGeometry args={[1, 0.1, 1]} />
+            <meshStandardMaterial color="#ffffff" emissive="#ffffff" emissiveIntensity={0.3} />
+          </mesh>
         </group>
-      </group>
+      )}
       
-      {/* Debug: Large visibility marker */}
-      <Box position={[0, 3, 0]} args={[1, 1, 1]}>
-        <meshStandardMaterial color="#ff00ff" emissive="#ff00ff" emissiveIntensity={0.3} />
-      </Box>
+      {/* Debug: End effector position marker */}
+      {robot && robot.endEffector && (
+        <group>
+          <mesh position={[0, 0, 0]}>
+            <sphereGeometry args={[0.05]} />
+            <meshStandardMaterial color="#ff0000" emissive="#ff0000" emissiveIntensity={0.8} />
+          </mesh>
+        </group>
+      )}
     </group>
   );
 }
 
-// TODO: Replace with actual KUKA GLTF model loader
-// import { useGLTF } from '@react-three/drei';
-// 
-// export function KukaArmGLTF({ targetPosition, isAnimating = false }: KukaArmProps) {
-//   const { scene } = useGLTF('/models/kuka-kr16.gltf');
-//   
-//   return (
-//     <primitive 
-//       object={scene.clone()} 
-//       position={[0, 0, 0]}
-//       scale={[1, 1, 1]}
-//     />
-//   );
-// }
