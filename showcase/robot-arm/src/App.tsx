@@ -15,7 +15,7 @@ function App() {
   const [nodes, setNodes] = useState<NodeInterop[]>([]);
   const [meshGeometries, setMeshGeometries] = useState<BufferGeometry[]>([]);
   const [curveGeometries, setCurveGeometries] = useState<BufferGeometry[]>([]);
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const debounceTimeoutRef = useRef<number | null>(null);
   const evaluateRef = useRef<(m: Modular) => void>();
 
   // Robot arm animation states
@@ -394,6 +394,7 @@ function App() {
             <group rotation={new Euler(-Math.PI * 0.5, 0, 0)}>
               {/* Note: This rotation rotates the entire scene by -90 degrees around X-axis */}
               {/* This transforms: Y -> -Z, Z -> Y */}
+              
             
               {/* Render mesh geometries */}
               {meshGeometries.map((geometry, i) => (
@@ -420,17 +421,40 @@ function App() {
                   for (let j = 0; j < positions.length; j += 3) {
                     points.push([positions[j], positions[j + 1], positions[j + 2]]);
                   }
-                  
                 }
                 
-                return (
-                  <Line
-                    key={`curve-${i}`}
-                    points={points}
-                    color="#3c4c5c"
-                    lineWidth={1}
-                  />
-                );
+                // Show original curve only when not animating
+                if (!isAnimating) {
+                  return (
+                    <Line
+                      key={`curve-${i}`}
+                      points={points}
+                      color="#3c4c5c"
+                      lineWidth={1}
+                    />
+                  );
+                }
+                
+                // Show progressive curve when animating
+                if (isAnimating && gcodeData) {
+                  // Calculate how many points to show based on animation progress
+                  const totalPoints = points.length;
+                  const progressPoints = Math.floor(animationProgress * totalPoints);
+                  const visiblePoints = points.slice(0, Math.max(1, progressPoints));
+                  
+                  if (visiblePoints.length > 1) {
+                    return (
+                      <Line
+                        key={`progress-curve-${i}`}
+                        points={visiblePoints}
+                        color="#ff6b35" // Orange color for progress visualization
+                        lineWidth={2}
+                      />
+                    );
+                  }
+                }
+                
+                return null;
               })}
               
               {/* KUKA Robot Arm */}
