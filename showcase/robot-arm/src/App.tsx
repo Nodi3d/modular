@@ -23,6 +23,7 @@ function App() {
   const [isAnimating, setIsAnimating] = useState(false);
   const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
   const [animationSpeed, setAnimationSpeed] = useState(1.0);
+  const [animationProgress, setAnimationProgress] = useState(0); // 0-1 continuous progress
   const animationRef = useRef<number | null>(null);
   const gcodeTextRef = useRef<string>("");
 
@@ -140,6 +141,7 @@ function App() {
   const resetAnimation = useCallback(() => {
     setIsAnimating(false);
     setCurrentMoveIndex(0);
+    setAnimationProgress(0);
   }, []);
 
   const handleSpeedChange = useCallback((speed: number) => {
@@ -148,7 +150,10 @@ function App() {
 
   const handleMoveChange = useCallback((moveIndex: number) => {
     setCurrentMoveIndex(moveIndex);
-  }, []);
+    if (gcodeData) {
+      setAnimationProgress(moveIndex / (gcodeData.totalMoves - 1));
+    }
+  }, [gcodeData]);
 
   // Export G-code function
   const exportGcode = useCallback(() => {
@@ -169,24 +174,39 @@ function App() {
     URL.revokeObjectURL(url);
   }, []);
 
-  // Animation loop
+  // Smooth animation loop
   useEffect(() => {
-    if (isAnimating && gcodeData && currentMoveIndex < gcodeData.totalMoves - 1) {
-      const timeout = setTimeout(() => {
-        setCurrentMoveIndex(prev => prev + 1);
-      }, (1000 / animationSpeed)); // Speed in moves per second
+    if (isAnimating && gcodeData) {
+      const totalMoves = gcodeData.totalMoves;
+      const progressIncrement = animationSpeed / (totalMoves * 60); // 60fps assumed
       
-      animationRef.current = timeout;
+      const animate = () => {
+        setAnimationProgress(prev => {
+          const newProgress = prev + progressIncrement;
+          if (newProgress >= 1) {
+            setIsAnimating(false);
+            return 1;
+          }
+          return newProgress;
+        });
+        
+        // Update discrete index for compatibility
+        setCurrentMoveIndex(Math.floor(animationProgress * (totalMoves - 1)));
+        
+        if (isAnimating) {
+          animationRef.current = requestAnimationFrame(animate);
+        }
+      };
+      
+      animationRef.current = requestAnimationFrame(animate);
       
       return () => {
         if (animationRef.current) {
-          clearTimeout(animationRef.current);
+          cancelAnimationFrame(animationRef.current);
         }
       };
-    } else if (currentMoveIndex >= (gcodeData?.totalMoves || 0) - 1) {
-      setIsAnimating(false);
     }
-  }, [isAnimating, currentMoveIndex, animationSpeed, gcodeData]);
+  }, [isAnimating, animationSpeed, gcodeData, animationProgress]);
 
   // Get current target position for robot arm
   const currentTargetPosition = useMemo(() => {
@@ -417,6 +437,8 @@ function App() {
               <KukaArm 
                 targetPosition={currentTargetPosition}
                 isAnimating={isAnimating}
+                allPositions={gcodeData?.moves.map(move => new Vector3(move.x, move.y, move.z))}
+                animationProgress={animationProgress}
               />
             </group>
           </Stage>

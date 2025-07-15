@@ -1,4 +1,4 @@
-import { useRef, useEffect } from 'react';
+import { useRef } from 'react';
 import { Group, Vector3 } from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Box } from '@react-three/drei';
@@ -6,21 +6,46 @@ import { Box } from '@react-three/drei';
 interface KukaArmProps {
   targetPosition?: Vector3;
   isAnimating?: boolean;
+  allPositions?: Vector3[];
+  animationProgress?: number; // 0-1 progress through entire path
 }
 
-export function KukaArm({ targetPosition, isAnimating = false }: KukaArmProps) {
+export function KukaArm({ targetPosition, isAnimating = false, allPositions, animationProgress = 0 }: KukaArmProps) {
   const armRef = useRef<Group>(null);
   const endEffectorRef = useRef<Group>(null);
 
   // Placeholder robot arm structure - will be replaced with actual KUKA GLTF model
   
   useFrame((_, delta) => {
-    if (isAnimating && targetPosition && endEffectorRef.current) {
-      // Simple linear interpolation to target position
-      const currentPos = endEffectorRef.current.position;
-      const lerpFactor = delta * 2; // Adjust animation speed
-      
-      currentPos.lerp(targetPosition, lerpFactor);
+    if (isAnimating && endEffectorRef.current) {
+      if (allPositions && allPositions.length > 1) {
+        // Smooth path following using all positions
+        const totalPoints = allPositions.length;
+        const currentIndex = Math.floor(animationProgress * (totalPoints - 1));
+        const nextIndex = Math.min(currentIndex + 1, totalPoints - 1);
+        const localProgress = (animationProgress * (totalPoints - 1)) - currentIndex;
+        
+        if (currentIndex < totalPoints - 1) {
+          const currentPoint = allPositions[currentIndex];
+          const nextPoint = allPositions[nextIndex];
+          const interpolatedPos = currentPoint.clone().lerp(nextPoint, localProgress);
+          
+          // Smooth movement towards interpolated position
+          const currentPos = endEffectorRef.current.position;
+          const lerpFactor = delta * 8; // Smooth following
+          currentPos.lerp(interpolatedPos, lerpFactor);
+        }
+      } else if (targetPosition) {
+        // Fallback to single target mode
+        const currentPos = endEffectorRef.current.position;
+        const lerpFactor = delta * 5;
+        const distance = currentPos.distanceTo(targetPosition);
+        if (distance < 0.1) {
+          currentPos.copy(targetPosition);
+        } else {
+          currentPos.lerp(targetPosition, lerpFactor);
+        }
+      }
     }
   });
 
