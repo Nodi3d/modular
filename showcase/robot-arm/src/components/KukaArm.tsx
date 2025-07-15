@@ -1,73 +1,109 @@
 import { useRef } from 'react';
 import { Group, Vector3 } from 'three';
 import { useFrame } from '@react-three/fiber';
-import { Box } from '@react-three/drei';
+import { Box, Line } from '@react-three/drei';
 
 interface KukaArmProps {
   targetPosition?: Vector3;
   isAnimating?: boolean;
   allPositions?: Vector3[];
   animationProgress?: number; // 0-1 progress through entire path
-  currentPosition?: Vector3; // Pre-calculated position from parent
-  onPositionUpdate?: (position: Vector3) => void;
 }
 
-export function KukaArm({ targetPosition, isAnimating = false, allPositions, animationProgress = 0, currentPosition, onPositionUpdate }: KukaArmProps) {
+export function KukaArm({ targetPosition, isAnimating = false, allPositions, animationProgress = 0 }: KukaArmProps) {
   const armRef = useRef<Group>(null);
   const endEffectorRef = useRef<Group>(null);
 
   // Placeholder robot arm structure - will be replaced with actual KUKA GLTF model
   
   useFrame((_, delta) => {
-    if (endEffectorRef.current) {
-      // If currentPosition is provided from parent, use it directly
-      if (currentPosition) {
-        endEffectorRef.current.position.copy(currentPosition);
-        return;
-      }
-      
-      // Otherwise, use internal lerp calculation
-      if (isAnimating) {
-        if (allPositions && allPositions.length > 1) {
-          // Smooth path following using all positions
-          const totalPoints = allPositions.length;
-          const currentIndex = Math.floor(animationProgress * (totalPoints - 1));
-          const nextIndex = Math.min(currentIndex + 1, totalPoints - 1);
-          const localProgress = (animationProgress * (totalPoints - 1)) - currentIndex;
+    if (isAnimating && endEffectorRef.current) {
+      if (allPositions && allPositions.length > 1) {
+        // Smooth path following using all positions
+        const totalPoints = allPositions.length;
+        const currentIndex = Math.floor(animationProgress * (totalPoints - 1));
+        const nextIndex = Math.min(currentIndex + 1, totalPoints - 1);
+        const localProgress = (animationProgress * (totalPoints - 1)) - currentIndex;
+        
+        if (currentIndex < totalPoints - 1) {
+          const currentPoint = allPositions[currentIndex];
+          const nextPoint = allPositions[nextIndex];
+          const interpolatedPos = currentPoint.clone().lerp(nextPoint, localProgress);
           
-          if (currentIndex < totalPoints - 1) {
-            const currentPoint = allPositions[currentIndex];
-            const nextPoint = allPositions[nextIndex];
-            const interpolatedPos = currentPoint.clone().lerp(nextPoint, localProgress);
-            
-            // Smooth movement towards interpolated position
-            const currentPos = endEffectorRef.current.position;
-            const lerpFactor = delta * 8; // Smooth following
-            currentPos.lerp(interpolatedPos, lerpFactor);
-            
-            // Notify parent of position update
-            onPositionUpdate?.(currentPos.clone());
-          }
-        } else if (targetPosition) {
-          // Fallback to single target mode
+          // Smooth movement towards interpolated position
           const currentPos = endEffectorRef.current.position;
-          const lerpFactor = delta * 5;
-          const distance = currentPos.distanceTo(targetPosition);
-          if (distance < 0.1) {
-            currentPos.copy(targetPosition);
-          } else {
-            currentPos.lerp(targetPosition, lerpFactor);
-          }
-          
-          // Notify parent of position update
-          onPositionUpdate?.(currentPos.clone());
+          const lerpFactor = delta * 8; // Smooth following
+          currentPos.lerp(interpolatedPos, lerpFactor);
+        }
+      } else if (targetPosition) {
+        // Fallback to single target mode
+        const currentPos = endEffectorRef.current.position;
+        const lerpFactor = delta * 5;
+        const distance = currentPos.distanceTo(targetPosition);
+        if (distance < 0.1) {
+          currentPos.copy(targetPosition);
+        } else {
+          currentPos.lerp(targetPosition, lerpFactor);
         }
       }
     }
   });
+  
+  // Render progressive curve when animating
+  const renderProgressiveCurve = () => {
+    if (isAnimating && allPositions && allPositions.length > 1 && endEffectorRef.current) {
+      const totalPoints = allPositions.length;
+      
+      // Get approximate progress to limit search range
+      const approximateIndex = Math.floor(animationProgress * (totalPoints - 1));
+      
+      // Find the most advanced passed point within the progress range
+      const findLastPassedPoint = (robotPos: Vector3, positions: Vector3[], maxIndex: number) => {
+        const threshold = 5.0; // Distance threshold to consider a point as "passed"
+        
+        // Search backwards from maxIndex to find the most advanced passed point
+        for (let i = Math.min(maxIndex, positions.length - 1); i >= 0; i--) {
+          const distance = robotPos.distanceTo(positions[i]);
+          if (distance < threshold) {
+            return i; // Return the most advanced point that's within threshold
+          }
+        }
+        
+        // Fallback: return the approximate index if no points are within threshold
+        return Math.max(0, Math.min(maxIndex, positions.length - 1));
+      };
+      
+      const currentPos = endEffectorRef.current.position;
+      const lastPassedIndex = findLastPassedPoint(currentPos, allPositions, approximateIndex);
+      
+      const visiblePoints: [number, number, number][] = [];
+      
+      // Add all points up to lastPassedIndex
+      for (let i = 0; i <= lastPassedIndex; i++) {
+        const pos = allPositions[i];
+        visiblePoints.push([pos.x, pos.y, pos.z]);
+      }
+      
+      // Add current robot position as the last point
+      visiblePoints.push([currentPos.x, currentPos.y, currentPos.z]);
+      
+      if (visiblePoints.length > 1) {
+        return (
+          <Line
+            points={visiblePoints}
+            color="#ff6b35" // Orange color for progress visualization
+            lineWidth={2}
+          />
+        );
+      }
+    }
+    return null;
+  };
 
   return (
     <group ref={armRef}>
+      {/* Progressive curve visualization */}
+      {renderProgressiveCurve()}
       {/* Placeholder robot arm structure */}
       {/* Base */}
       <Box position={[0, 0.5, 0]} args={[2, 1, 2]}>

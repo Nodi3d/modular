@@ -435,25 +435,7 @@ function App() {
                   );
                 }
                 
-                // Show progressive curve when animating
-                if (isAnimating && gcodeData) {
-                  // Calculate how many points to show based on animation progress
-                  const totalPoints = points.length;
-                  const progressPoints = Math.floor(animationProgress * totalPoints);
-                  const visiblePoints = points.slice(0, Math.max(1, progressPoints));
-                  
-                  if (visiblePoints.length > 1) {
-                    return (
-                      <Line
-                        key={`progress-curve-${i}`}
-                        points={visiblePoints}
-                        color="#ff6b35" // Orange color for progress visualization
-                        lineWidth={2}
-                      />
-                    );
-                  }
-                }
-                
+                // Progressive curve is now handled in KukaArm component
                 return null;
               })}
               
