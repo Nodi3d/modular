@@ -3,7 +3,8 @@ import { Group, Object3D } from 'three';
 import { useFrame } from '@react-three/fiber';
 import URDFLoader from 'urdf-loader';
 import { useRobotAnimationStore } from '../stores/useRobotAnimationStore';
-import { CCDIKSolver } from '../utils/ikSolver';
+// @ts-ignore
+import { IKSolver, IKChain } from '../utils/ik';
 
 interface URDFRobotArmProps {}
 
@@ -12,7 +13,8 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
   const [robot, setRobot] = useState<Object3D | null>(null);
   const [isLoaded, setIsLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [ikSolver, setIkSolver] = useState<CCDIKSolver | null>(null);
+  const [ikSolver, setIkSolver] = useState<any>(null);
+  const [targetMarker, setTargetMarker] = useState<Object3D | null>(null);
   
   const { 
     currentPosition,
@@ -54,26 +56,33 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         
         // ロボットモデルの設定
         robotModel.position.set(0, 0, 0);
-        robotModel.scale.set(1, 1, 1); // スケール調整（必要に応じて）
+        robotModel.scale.set(1, 1, 1);
         
         setRobot(robotModel);
         setIsLoaded(true);
         console.log('Robot loaded and configured');
         
+        // ターゲットマーカーを作成
+        const target = new Object3D();
+        target.position.copy(currentPosition);
+        setTargetMarker(target);
+        
+        // IKChainを作成
+        const chain = new IKChain();
+        chain.createFromURDFRobot(robotModel, robotModel);
+        
         // IKソルバーを初期化
-        const solver = new CCDIKSolver({
-          maxIterations: 20,
-          threshold: 0.01,
-          dampingFactor: 0.8,
+        const solver = new IKSolver({
+          tolerance: 0.01,
+          maxNumOfIterations: 20,
+          shouldUpdateURDFRobot: true
         });
         
-        // URDFからジョイントチェーンを構築
-        if (solver.buildFromURDF(robotModel)) {
-          setIkSolver(solver);
-          console.log('IK Solver initialized successfully');
-        } else {
-          console.warn('Failed to initialize IK Solver');
-        }
+        solver.ikChain = chain;
+        solver.target = target;
+        
+        setIkSolver(solver);
+        console.log('IK Solver initialized successfully');
         
       } catch (err) {
         console.error('Failed to load URDF:', err);
@@ -85,17 +94,17 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
   }, []);
 
   useFrame((_, delta) => {
-    if (robot && ikSolver) {
+    if (robot && ikSolver && targetMarker) {
       if (isAnimating) {
         updateAnimationState(delta);
       }
       
-      // IKソルバーでcurrentPositionから関節角度を計算（アニメーション中・手動制御両方で動作）
+      // ターゲット位置を更新
+      targetMarker.position.copy(currentPosition);
+      
+      // IKソルバーでcurrentPositionから関節角度を計算
       try {
-        const success = ikSolver.solve(currentPosition);
-        if (!success) {
-          console.warn('IK solver failed to converge for position:', currentPosition);
-        }
+        ikSolver.solve();
       } catch (error) {
         console.error('IK solver error:', error);
       }

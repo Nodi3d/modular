@@ -10,7 +10,6 @@ import { AnimationControls } from "./components/AnimationControls";
 import { convertCurveToGcodeMoves } from "./utils/gcodeParser";
 import { useModularStore } from "./stores/useModularStore";
 import { useRobotAnimationStore } from "./stores/useRobotAnimationStore";
-import { KukaArm } from "./components/KukaArm";
 import { URDFRobotArm } from "./components/URDFRobotArm";
 
 function App() {
@@ -438,7 +437,7 @@ function App() {
               })}
               
               {/* KUKA Robot Arm */}
-              <KukaArm />
+              
               <URDFRobotArm />
             </group>
           </Stage>

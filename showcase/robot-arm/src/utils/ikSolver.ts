@@ -1,7 +1,8 @@
-import { Vector3, Matrix4, Object3D } from 'three';
+import { Vector3, Object3D } from 'three';
 
 export interface JointInfo {
-  joint: Object3D;
+  name: string;
+  joint: any; // urdf-loader joint object
   axis: Vector3;
   limits: { min: number; max: number };
   currentAngle: number;
@@ -16,6 +17,7 @@ export interface IKSolverOptions {
 export class CCDIKSolver {
   private joints: JointInfo[] = [];
   private endEffector: Object3D | null = null;
+  private robot: any = null; // urdf-loader robot object
   private options: Required<IKSolverOptions>;
 
   constructor(options: IKSolverOptions = {}) {
@@ -37,36 +39,47 @@ export class CCDIKSolver {
   /**
    * URDF情報からジョイントチェーンを構築
    */
-  buildFromURDF(robot: Object3D): boolean {
+  buildFromURDF(robot: any): boolean {
     try {
-      // URDFから関節情報を抽出
+      this.robot = robot;
+      
+      // urdf-loaderのjointsオブジェクトからジョイント情報を抽出
       const joints: JointInfo[] = [];
       
-      // URDF構造を解析してジョイントを検索
-      const findJoints = (obj: Object3D) => {
-        if (obj.name && obj.name.includes('joint')) {
-          // ジョイント制限を設定（URDFファイルの情報に基づく）
-          const limits = this.getJointLimits(obj.name);
-          const axis = this.getJointAxis(obj.name);
+      // URDF関節の順序（ベースから先端へ）
+      const jointNames = [
+        'kuka-arm-004_link_joint',
+        'kuka-arm-003_link_joint', 
+        'kuka-arm-002_link_joint',
+        'kuka-arm-001_link_joint',
+        'kuka-arm-000_link_joint'
+      ];
+      
+      jointNames.forEach(name => {
+        if (robot.joints && robot.joints[name]) {
+          const joint = robot.joints[name];
+          const limits = this.getJointLimits(name);
+          const axis = this.getJointAxis(name);
+          
+          // デバッグ情報（必要に応じて有効化）
+          // console.log(`Joint ${name}:`, joint);
           
           joints.push({
-            joint: obj,
+            name,
+            joint,
             axis,
             limits,
             currentAngle: 0,
           });
         }
-        
-        obj.children.forEach(child => findJoints(child));
-      };
-      
-      findJoints(robot);
+      });
       
       // エンドエフェクターを検索
       const endEffector = this.findEndEffector(robot);
       
       if (joints.length > 0 && endEffector) {
-        this.setJointChain(joints, endEffector);
+        this.joints = joints;
+        this.endEffector = endEffector;
         return true;
       }
       
@@ -81,12 +94,15 @@ export class CCDIKSolver {
    * IK計算を実行
    */
   solve(targetPosition: Vector3): boolean {
-    if (!this.endEffector || this.joints.length === 0) {
+    if (!this.robot || !this.endEffector || this.joints.length === 0) {
       console.warn('IK Solver not properly initialized');
       return false;
     }
 
     for (let iteration = 0; iteration < this.options.maxIterations; iteration++) {
+      // 現在の関節角度でロボットを更新
+      this.updateRobotJoints();
+      
       // エンドエフェクターの現在位置を取得
       const currentEndPos = new Vector3();
       this.endEffector.getWorldPosition(currentEndPos);
@@ -101,11 +117,16 @@ export class CCDIKSolver {
       
       // 各ジョイントに対してCCDアルゴリズムを適用
       for (let i = this.joints.length - 1; i >= 0; i--) {
-        const joint = this.joints[i];
+        const jointInfo = this.joints[i];
         
         // ジョイント位置を取得
         const jointPos = new Vector3();
-        joint.joint.getWorldPosition(jointPos);
+        if (jointInfo.joint && jointInfo.joint.position) {
+          jointPos.copy(jointInfo.joint.position);
+        } else {
+          // フォールバック: 関節の起点を使用
+          jointPos.set(0, 0, 0);
+        }
         
         // 現在のエンドエフェクター位置を更新
         this.endEffector.getWorldPosition(currentEndPos);
@@ -122,16 +143,14 @@ export class CCDIKSolver {
           const rotationAxis = toEnd.clone().cross(toTarget).normalize();
           
           // ジョイントの軸と一致するように調整
-          const alignedAngle = angle * rotationAxis.dot(joint.axis) * this.options.dampingFactor;
+          const alignedAngle = angle * rotationAxis.dot(jointInfo.axis) * this.options.dampingFactor;
           
           // 関節制限を適用
-          const newAngle = this.clampAngle(joint.currentAngle + alignedAngle, joint.limits);
-          const deltaAngle = newAngle - joint.currentAngle;
+          const newAngle = this.clampAngle(jointInfo.currentAngle + alignedAngle, jointInfo.limits);
+          const deltaAngle = newAngle - jointInfo.currentAngle;
           
           if (Math.abs(deltaAngle) > 0.001) {
-            // ジョイントを回転
-            this.rotateJoint(joint, deltaAngle);
-            joint.currentAngle = newAngle;
+            jointInfo.currentAngle = newAngle;
           }
         }
       }
@@ -142,12 +161,24 @@ export class CCDIKSolver {
   }
 
   /**
-   * ジョイントを回転させる
+   * ロボットの関節角度を更新
    */
-  private rotateJoint(joint: JointInfo, angle: number) {
-    const rotationMatrix = new Matrix4();
-    rotationMatrix.makeRotationAxis(joint.axis, angle);
-    joint.joint.applyMatrix4(rotationMatrix);
+  private updateRobotJoints() {
+    if (!this.robot) {
+      console.warn('Robot not available');
+      return;
+    }
+    
+    // 各関節の角度を設定
+    this.joints.forEach(joint => {
+      if (joint.joint && joint.joint.setJointValue) {
+        joint.joint.setJointValue(joint.currentAngle);
+      } else if (this.robot.setJointValue) {
+        this.robot.setJointValue(joint.name, joint.currentAngle);
+      } else {
+        console.warn(`Cannot set joint value for ${joint.name}`);
+      }
+    });
   }
 
   /**
@@ -221,12 +252,36 @@ export class CCDIKSolver {
     for (let i = 0; i < Math.min(angles.length, this.joints.length); i++) {
       const joint = this.joints[i];
       const newAngle = this.clampAngle(angles[i], joint.limits);
-      const deltaAngle = newAngle - joint.currentAngle;
-      
-      if (Math.abs(deltaAngle) > 0.001) {
-        this.rotateJoint(joint, deltaAngle);
-        joint.currentAngle = newAngle;
-      }
+      joint.currentAngle = newAngle;
     }
+    
+    // ロボットの関節角度を更新
+    this.updateRobotJoints();
+  }
+
+  /**
+   * デフォルト姿勢に戻す
+   */
+  resetToDefaultPose() {
+    // 全関節を中立位置（0.0）に設定
+    this.joints.forEach(joint => {
+      joint.currentAngle = 0.0;
+    });
+    
+    // ロボットの関節角度を更新
+    this.updateRobotJoints();
+  }
+
+  /**
+   * 現在のエンドエフェクター位置を取得
+   */
+  getCurrentEndEffectorPosition(): Vector3 {
+    if (!this.endEffector) {
+      return new Vector3(0, 0, 0);
+    }
+    
+    const position = new Vector3();
+    this.endEffector.getWorldPosition(position);
+    return position;
   }
 }
