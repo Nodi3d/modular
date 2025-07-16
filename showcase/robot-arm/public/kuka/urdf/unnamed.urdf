@@ -1,90 +1,104 @@
 <robot name="unnamed" version="1.0">
   <joint name="kuka-arm-004_link_joint" type="revolute">
-    <limit lower="-1.00000" upper="1.00000" effort="1.11000" velocity="0.00000"/>
-    <origin rpy="0.00000 0.00000 0.00000" xyz="0.00971 -0.01443 9.84568"/>
+    <limit lower="-2.96706" upper="2.96706" effort="1.11000" velocity="0.00000"/>
+    <origin rpy="0.00000 0.00000 0.00000" xyz="0.01942 -0.02886 19.69136"/>
     <parent link="kuka-arm-005_link"/>
     <child link="kuka-arm-004_link"/>
     <axis xyz="0.00000 0.00000 1.00000"/>
   </joint>
   <joint name="kuka-arm-003_link_joint" type="revolute">
-    <limit lower="-0.33000" upper="0.49000" effort="1.11000" velocity="0.00000"/>
-    <origin rpy="-0.00000 -0.00000 -0.00000" xyz="8.21240 0.22730 6.83013"/>
+    <limit lower="-1.57080" upper="1.57080" effort="1.11000" velocity="0.00000"/>
+    <origin rpy="-0.00000 -0.00000 -0.00000" xyz="16.42480 0.45460 13.66026"/>
     <parent link="kuka-arm-004_link"/>
     <child link="kuka-arm-003_link"/>
     <axis xyz="0.00000 1.00000 0.00000"/>
   </joint>
   <joint name="kuka-arm-002_link_joint" type="revolute">
-    <limit lower="-0.33000" upper="0.49000" effort="1.11000" velocity="0.00000"/>
-    <origin rpy="0.00000 -0.00000 0.00000" xyz="0.01569 -0.13262 21.69338"/>
+    <limit lower="-1.57080" upper="1.57080" effort="1.11000" velocity="0.00000"/>
+    <origin rpy="0.00000 -0.00000 0.00000" xyz="0.03138 -0.26524 43.38676"/>
     <parent link="kuka-arm-003_link"/>
     <child link="kuka-arm-002_link"/>
     <axis xyz="0.00000 1.00000 0.00000"/>
   </joint>
   <joint name="kuka-arm-001_link_joint" type="revolute">
-    <limit lower="-0.33000" upper="0.49000" effort="1.11000" velocity="0.00000"/>
-    <origin rpy="-0.00000 0.00000 -0.00000" xyz="16.66716 0.08146 -0.95556"/>
+    <limit lower="-1.57080" upper="1.57080" effort="1.11000" velocity="0.00000"/>
+    <origin rpy="-0.00000 0.00000 -0.00000" xyz="33.33432 0.16292 -1.91112"/>
     <parent link="kuka-arm-002_link"/>
     <child link="kuka-arm-001_link"/>
     <axis xyz="0.00000 1.00000 0.00000"/>
   </joint>
   <joint name="kuka-arm-000_link_joint" type="revolute">
-    <limit lower="-1.00000" upper="1.00000" effort="0.00000" velocity="0.00000"/>
-    <origin rpy="0.00000 0.00000 -0.00000" xyz="6.29044 -0.19594 0.07072"/>
+    <limit lower="-1.57080" upper="1.57080" effort="0.00000" velocity="0.00000"/>
+    <origin rpy="0.00000 0.00000 -0.00000" xyz="12.58088 -0.39188 0.14144"/>
     <parent link="kuka-arm-001_link"/>
     <child link="kuka-arm-000_link"/>
     <axis xyz="1.00000 0.00000 0.00000"/>
+  </joint>
+  <joint name="end_effector_joint" type="fixed">
+    <origin rpy="0.00000 0.00000 0.00000" xyz="-2.99080 0.06848 0.07536"/>
+    <parent link="kuka-arm-000_link"/>
+    <child link="end_effector_link"/>
   </joint>
   <link name="kuka-arm-005_link">
     <visual name="kuka-arm-005">
       <material name="None"/>
       <origin rpy="0.00000 0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
       <geometry>
-        <mesh filename="../meshes/stl/kuka-arm-005.stl" scale="1 1 1"/>
+        <mesh filename="../meshes/stl/kuka-arm-005.stl" scale="2 2 2"/>
       </geometry>
     </visual>
   </link>
   <link name="kuka-arm-004_link">
     <visual name="kuka-arm-004">
       <material name="None"/>
-      <origin rpy="0.00000 0.00000 0.00000" xyz="-0.00971 0.01443 -9.84568"/>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="-0.01942 0.02886 -19.69136"/>
       <geometry>
-        <mesh filename="../meshes/stl/kuka-arm-004.stl" scale="1 1 1"/>
+        <mesh filename="../meshes/stl/kuka-arm-004.stl" scale="2 2 2"/>
       </geometry>
     </visual>
   </link>
   <link name="kuka-arm-003_link">
     <visual name="kuka-arm-003">
       <material name="None"/>
-      <origin rpy="-0.00000 -0.00000 0.00000" xyz="-8.22211 -0.21286 -16.67581"/>
+      <origin rpy="-0.00000 -0.00000 0.00000" xyz="-16.44422 -0.42572 -33.35162"/>
       <geometry>
-        <mesh filename="../meshes/stl/kuka-arm-003.stl" scale="1 1 1"/>
+        <mesh filename="../meshes/stl/kuka-arm-003.stl" scale="2 2 2"/>
       </geometry>
     </visual>
   </link>
   <link name="kuka-arm-002_link">
     <visual name="kuka-arm-002">
       <material name="None"/>
-      <origin rpy="-0.00000 0.00000 -0.00000" xyz="-8.23780 -0.08024 -38.36919"/>
+      <origin rpy="-0.00000 0.00000 -0.00000" xyz="-16.47560 -0.16048 -76.73838"/>
       <geometry>
-        <mesh filename="../meshes/stl/kuka-arm-002.stl" scale="1 1 1"/>
+        <mesh filename="../meshes/stl/kuka-arm-002.stl" scale="2 2 2"/>
       </geometry>
     </visual>
   </link>
   <link name="kuka-arm-001_link">
     <visual name="kuka-arm-001">
       <material name="None"/>
-      <origin rpy="0.00000 0.00000 0.00000" xyz="-24.90497 -0.16170 -37.41364"/>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="-49.80994 -0.32340 -74.82728"/>
       <geometry>
-        <mesh filename="../meshes/stl/kuka-arm-001.stl" scale="1 1 1"/>
+        <mesh filename="../meshes/stl/kuka-arm-001.stl" scale="2 2 2"/>
       </geometry>
     </visual>
   </link>
   <link name="kuka-arm-000_link">
     <visual name="kuka-arm-000">
       <material name="None"/>
-      <origin rpy="0.00000 0.00000 -0.00000" xyz="-1.49540 0.03424 0.03768"/>
+      <origin rpy="0.00000 0.00000 -0.00000" xyz="-2.99080 0.06848 0.07536"/>
       <geometry>
-        <mesh filename="../meshes/stl/kuka-arm-000.stl" scale="1 1 1"/>
+        <mesh filename="../meshes/stl/kuka-arm-000.stl" scale="2 2 2"/>
+      </geometry>
+    </visual>
+  </link>
+  <link name="end_effector_link">
+    <visual>
+      <material name="None"/>
+      <origin rpy="0.00000 0.00000 0.00000" xyz="0.00000 0.00000 0.00000"/>
+      <geometry>
+        <box size="1.0 1.0 1.0"/>
       </geometry>
     </visual>
   </link>

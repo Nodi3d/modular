@@ -23,6 +23,8 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
     updateAnimationState
   } = useRobotAnimationStore();
 
+  
+
   useEffect(() => {
     const loadURDF = async () => {
       try {
@@ -71,6 +73,12 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         const chain = new IKChain();
         chain.createFromURDFRobot(robotModel, robotModel);
         
+        // IKChainの構造をデバッグ出力
+        console.log('IKChain created:');
+        console.log('Chain length:', chain.ikJoints.length);
+        console.log('Chain joints:', chain.ikJoints.map((j: any) => j.name));
+        console.log('End effector:', chain.endEffector?.name || 'Not found');
+        
         // IKソルバーを初期化
         const solver = new IKSolver({
           tolerance: 0.01,
@@ -83,6 +91,7 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         
         setIkSolver(solver);
         console.log('IK Solver initialized successfully');
+        console.log('Target position:', target.position);
         
       } catch (err) {
         console.error('Failed to load URDF:', err);
