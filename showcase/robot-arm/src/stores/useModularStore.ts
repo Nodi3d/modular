@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { Modular, NodeInterop } from 'nodi-modular';
 import { BufferGeometry } from 'three';
+import { ParsedGcode } from '../utils/gcodeParser';
 
 interface ModularStore {
   // Core Modular state
@@ -9,10 +10,16 @@ interface ModularStore {
   meshGeometries: BufferGeometry[];
   curveGeometries: BufferGeometry[];
   
+  // G-code related
+  gcodeData: ParsedGcode | null;
+  gcodeText: string;
+  
   // Actions
   setModular: (modular: Modular | null) => void;
   setNodes: (nodes: NodeInterop[]) => void;
   setGeometries: (meshes: BufferGeometry[], curves: BufferGeometry[]) => void;
+  setGcodeData: (data: ParsedGcode | null) => void;
+  setGcodeText: (text: string) => void;
   clearGeometries: () => void;
 }
 
@@ -22,6 +29,8 @@ export const useModularStore = create<ModularStore>((set) => ({
   nodes: [],
   meshGeometries: [],
   curveGeometries: [],
+  gcodeData: null,
+  gcodeText: '',
   
   // Actions
   setModular: (modular) => set({ modular }),
@@ -30,6 +39,8 @@ export const useModularStore = create<ModularStore>((set) => ({
     meshGeometries: meshes, 
     curveGeometries: curves 
   }),
+  setGcodeData: (data) => set({ gcodeData: data }),
+  setGcodeText: (text) => set({ gcodeText: text }),
   clearGeometries: () => set({ 
     meshGeometries: [], 
     curveGeometries: [] 

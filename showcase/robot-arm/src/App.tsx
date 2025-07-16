@@ -10,8 +10,7 @@ import { KukaArm } from "./components/KukaArm";
 import { AnimationControls } from "./components/AnimationControls";
 import { convertCurveToGcodeMoves } from "./utils/gcodeParser";
 import { useModularStore } from "./stores/useModularStore";
-import { useAnimationStore } from "./stores/useAnimationStore";
-import { useRobotArmStore } from "./stores/useRobotArmStore";
+import { useRobotAnimationStore } from "./stores/useRobotAnimationStore";
 
 function App() {
   // Zustand stores
@@ -20,27 +19,26 @@ function App() {
     nodes,
     meshGeometries,
     curveGeometries,
+    gcodeData,
+    gcodeText,
     setModular,
     setNodes,
-    setGeometries
+    setGeometries,
+    setGcodeData,
+    setGcodeText
   } = useModularStore();
   
   const {
-    gcodeData,
     isAnimating,
     currentMoveIndex,
     animationSpeed,
-    gcodeText,
-    setGcodeData,
-    setGcodeText,
     startAnimation,
     pauseAnimation,
     resetAnimation,
     setAnimationSpeed,
-    setCurrentMoveIndex
-  } = useAnimationStore();
-  
-  const { setTargetPosition, setAllPositions } = useRobotArmStore();
+    setCurrentMoveIndex,
+    setAllPositions
+  } = useRobotAnimationStore();
   
   // Local refs
   const debounceTimeoutRef = useRef<number | null>(null);
@@ -186,14 +184,7 @@ function App() {
     };
   }, [pauseAnimation]);
 
-  // Update target position for robot arm
-  useEffect(() => {
-    if (gcodeData && gcodeData.moves[currentMoveIndex]) {
-      const move = gcodeData.moves[currentMoveIndex];
-      const targetPos = new Vector3(move.x, move.y, move.z);
-      setTargetPosition(targetPos);
-    }
-  }, [gcodeData, currentMoveIndex, setTargetPosition]);
+  // No longer needed - handled in unified store
 
   const handleChange = useCallback(
     (id: string, value: number) => {
