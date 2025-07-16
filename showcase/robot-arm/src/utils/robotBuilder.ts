@@ -83,7 +83,7 @@ export class RobotBuilder {
         let filename = link.visual.geometry.mesh.filename;
         // Convert relative path to absolute
         if (filename.startsWith('../')) {
-          filename = filename.replace('../meshes_arm/', '/kuka_lwr/meshes_arm/');
+          filename = filename.replace('../meshes/stl/', '/kuka/meshes/stl/');
         }
         meshFilenames.add(filename);
       }
@@ -98,6 +98,9 @@ export class RobotBuilder {
           roughness: 0.4
         });
         const mesh = new Mesh(geometry, material);
+        // Scale mesh from millimeters to meters
+        // mesh.scale.setScalar(0.001);
+        mesh.scale.setScalar(1);
         this.loadedMeshes.set(filename, mesh);
       } catch (error) {
         console.warn(`Failed to load mesh ${filename}:`, error);
@@ -127,7 +130,7 @@ export class RobotBuilder {
     if (link.visual?.geometry.mesh?.filename) {
       let filename = link.visual.geometry.mesh.filename;
       if (filename.startsWith('../')) {
-        filename = filename.replace('../meshes_arm/', '/kuka_lwr/meshes_arm/');
+        filename = filename.replace('../meshes/stl/', '/kuka/meshes/stl/');
       }
 
       const loadedMesh = this.loadedMeshes.get(filename);

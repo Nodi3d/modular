@@ -24,7 +24,7 @@ export function KukaArm({ targetPosition, isAnimating = false, allPositions, ani
   useEffect(() => {
     const loadRobot = async () => {
       try {
-        const response = await fetch('/kuka_lwr/urdf/kuka_lwr.URDF');
+        const response = await fetch('/kuka/urdf/unnamed.urdf');
         const urdfContent = await response.text();
         
         const robotDescription = URDFParser.parseURDF(urdfContent);
@@ -155,7 +155,7 @@ export function KukaArm({ targetPosition, isAnimating = false, allPositions, ani
       {/* Debug: End effector position marker */}
       {robot && robot.endEffector && (
         <group>
-          <mesh position={[0, 0, 0]}>
+          <mesh position={[robot.endEffector.position.x, robot.endEffector.position.y, robot.endEffector.position.z]}>
             <sphereGeometry args={[0.05]} />
             <meshStandardMaterial color="#ff0000" emissive="#ff0000" emissiveIntensity={0.8} />
           </mesh>
