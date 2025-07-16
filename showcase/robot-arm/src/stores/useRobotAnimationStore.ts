@@ -17,6 +17,7 @@ interface RobotAnimationStore {
   
   // Actions
   setAllPositions: (positions: Vector3[]) => void;
+  setCurrentPosition: (position: Vector3) => void;
   startAnimation: () => void;
   pauseAnimation: () => void;
   resetAnimation: () => void;
@@ -41,6 +42,7 @@ export const useRobotAnimationStore = create<RobotAnimationStore>((set, get) => 
   
   // Actions
   setAllPositions: (positions) => set({ allPositions: positions }),
+  setCurrentPosition: (position) => set({ currentPosition: position.clone() }),
   
   startAnimation: () => {
     const { gcodeData } = useModularStore.getState();

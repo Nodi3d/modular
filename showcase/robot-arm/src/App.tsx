@@ -3,14 +3,15 @@ import { Canvas } from "@react-three/fiber";
 import { useControls, button } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
 import init, { Modular } from "nodi-modular";
-import { useCallback, useEffect, useMemo, useRef } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BufferAttribute, BufferGeometry, DoubleSide, Euler, Matrix4, Vector3 } from "three";
 import polygonstool from "./polygonstool.json";
-import { KukaArm } from "./components/KukaArm";
 import { AnimationControls } from "./components/AnimationControls";
 import { convertCurveToGcodeMoves } from "./utils/gcodeParser";
 import { useModularStore } from "./stores/useModularStore";
 import { useRobotAnimationStore } from "./stores/useRobotAnimationStore";
+import { KukaArm } from "./components/KukaArm";
+import { URDFRobotArm } from "./components/URDFRobotArm";
 
 function App() {
   // Zustand stores
@@ -37,8 +38,19 @@ function App() {
     resetAnimation,
     setAnimationSpeed,
     setCurrentMoveIndex,
-    setAllPositions
+    setAllPositions,
+    setCurrentPosition
   } = useRobotAnimationStore();
+  
+  // Local state for manual control (避免循環依存)
+  const [manualTarget, setManualTarget] = useState({ x: 0, y: 0, z: 0 });
+  
+  // 手動制御用の処理関数
+  const updateManualTarget = useCallback((axis: 'x' | 'y' | 'z', value: number) => {
+    const newTarget = { ...manualTarget, [axis]: value };
+    setManualTarget(newTarget);
+    setCurrentPosition(new Vector3(newTarget.x, newTarget.y, newTarget.z));
+  }, [manualTarget, setCurrentPosition]);
   
   // Local refs
   const debounceTimeoutRef = useRef<number | null>(null);
@@ -275,12 +287,37 @@ function App() {
         return acc;
       }, {} as Schema);
 
-    // Add Export G-code button
+    // Add Export G-code button and manual robot control
     return {
       ...nodeParams,
       "Export G-code": button(exportGcode),
+      "Manual X": {
+        value: manualTarget.x,
+        min: -200,
+        max: 200,
+        step: 1,
+        onChange: (value: number) => updateManualTarget('x', value),
+      },
+      "Manual Y": {
+        value: manualTarget.y,
+        min: -200,
+        max: 200,
+        step: 1,
+        onChange: (value: number) => updateManualTarget('y', value),
+      },
+      "Manual Z": {
+        value: manualTarget.z,
+        min: -200,
+        max: 200,
+        step: 1,
+        onChange: (value: number) => updateManualTarget('z', value),
+      },
+      "Reset Position": button(() => {
+        setManualTarget({ x: 0, y: 0, z: 0 });
+        setCurrentPosition(new Vector3(0, 0, 0));
+      }),
     };
-  }, [nodes, handleChange, exportGcode]);
+  }, [nodes, handleChange, exportGcode, manualTarget, updateManualTarget, setCurrentPosition]);
 
   useControls(params, [params]);
 
@@ -402,6 +439,7 @@ function App() {
               
               {/* KUKA Robot Arm */}
               <KukaArm />
+              <URDFRobotArm />
             </group>
           </Stage>
         )}
