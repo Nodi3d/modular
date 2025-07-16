@@ -2,13 +2,6 @@ import { create } from 'zustand';
 import { Vector3 } from 'three';
 import { useModularStore } from './useModularStore';
 
-interface AnimationData {
-  currentPosition: Vector3;
-  progressiveCurvePoints: [number, number, number][];
-  currentIndex: number;
-  localProgress: number;
-}
-
 interface RobotAnimationStore {
   // Animation state
   isAnimating: boolean;
@@ -22,19 +15,14 @@ interface RobotAnimationStore {
   allPositions: Vector3[];
   progressiveCurvePoints: [number, number, number][];
   
-  // Unified calculation method
-  getAnimationData: (progress?: number) => AnimationData;
-  
   // Actions
   setAllPositions: (positions: Vector3[]) => void;
-  setCurrentPosition: (position: Vector3) => void;
   startAnimation: () => void;
   pauseAnimation: () => void;
   resetAnimation: () => void;
   setAnimationSpeed: (speed: number) => void;
   setAnimationProgress: (progress: number) => void;
   setCurrentMoveIndex: (index: number) => void;
-  toggleAnimation: () => void;
   updateProgress: () => void;
   updateAnimationState: (deltaTime: number) => void;
   stopAnimationFrame: () => void;
@@ -51,71 +39,8 @@ export const useRobotAnimationStore = create<RobotAnimationStore>((set, get) => 
   allPositions: [],
   progressiveCurvePoints: [],
   
-  // Unified calculation method
-  getAnimationData: (progress) => {
-    const state = get();
-    const currentProgress = progress ?? state.animationProgress;
-    const { allPositions, currentPosition } = state;
-    
-    if (!allPositions.length) {
-      return {
-        currentPosition: currentPosition.clone(),
-        progressiveCurvePoints: [],
-        currentIndex: 0,
-        localProgress: 0,
-      };
-    }
-    
-    const totalPoints = allPositions.length;
-    const currentIndex = Math.floor(currentProgress * (totalPoints - 1));
-    const nextIndex = Math.min(currentIndex + 1, totalPoints - 1);
-    const localProgress = (currentProgress * (totalPoints - 1)) - currentIndex;
-    
-    // Calculate interpolated position
-    let interpolatedPos = currentPosition.clone();
-    if (currentIndex < totalPoints - 1) {
-      const currentPoint = allPositions[currentIndex];
-      const nextPoint = allPositions[nextIndex];
-      interpolatedPos = currentPoint.clone().lerp(nextPoint, localProgress);
-    }
-    
-    // Calculate progressive curve points
-    const progressiveCurvePoints: [number, number, number][] = [];
-    if (state.isAnimating && allPositions.length > 1) {
-      const threshold = 1.0;
-      const approximateIndex = Math.floor(currentProgress * (totalPoints - 1));
-      
-      // Find the most advanced passed point
-      let lastPassedIndex = 0;
-      for (let i = Math.min(approximateIndex, totalPoints - 1); i >= 0; i--) {
-        const distance = currentPosition.distanceTo(allPositions[i]);
-        if (distance < threshold) {
-          lastPassedIndex = i;
-          break;
-        }
-      }
-      
-      // Add all points up to lastPassedIndex
-      for (let i = 0; i <= lastPassedIndex; i++) {
-        const pos = allPositions[i];
-        progressiveCurvePoints.push([pos.x, pos.y, pos.z]);
-      }
-      
-      // Add current robot position as the last point
-      progressiveCurvePoints.push([currentPosition.x, currentPosition.y, currentPosition.z]);
-    }
-    
-    return {
-      currentPosition: interpolatedPos,
-      progressiveCurvePoints,
-      currentIndex,
-      localProgress,
-    };
-  },
-  
   // Actions
   setAllPositions: (positions) => set({ allPositions: positions }),
-  setCurrentPosition: (position) => set({ currentPosition: position }),
   
   startAnimation: () => {
     const { gcodeData } = useModularStore.getState();
@@ -154,14 +79,6 @@ export const useRobotAnimationStore = create<RobotAnimationStore>((set, get) => 
     }
   },
   
-  toggleAnimation: () => {
-    const { isAnimating } = get();
-    if (isAnimating) {
-      get().pauseAnimation();
-    } else {
-      get().startAnimation();
-    }
-  },
   
   updateProgress: () => {
     const animate = () => {
