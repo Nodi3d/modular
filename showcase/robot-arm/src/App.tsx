@@ -1,31 +1,50 @@
-import { OrbitControls, Sky, Stage, Line, Grid } from "@react-three/drei";
+import { OrbitControls, Stage, Line } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useControls, button } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
-import init, { Modular, NodeInterop } from "nodi-modular";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import init, { Modular } from "nodi-modular";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 import { BufferAttribute, BufferGeometry, DoubleSide, Euler, Matrix4, Vector3 } from "three";
 import polygonstool from "./polygonstool.json";
 import { KukaArm } from "./components/KukaArm";
 import { AnimationControls } from "./components/AnimationControls";
-import { ParsedGcode, convertCurveToGcodeMoves } from "./utils/gcodeParser";
+import { convertCurveToGcodeMoves } from "./utils/gcodeParser";
+import { useModularStore } from "./stores/useModularStore";
+import { useAnimationStore } from "./stores/useAnimationStore";
+import { useRobotArmStore } from "./stores/useRobotArmStore";
 
 function App() {
-  const [modular, setModular] = useState<Modular | null>(null);
-  const [nodes, setNodes] = useState<NodeInterop[]>([]);
-  const [meshGeometries, setMeshGeometries] = useState<BufferGeometry[]>([]);
-  const [curveGeometries, setCurveGeometries] = useState<BufferGeometry[]>([]);
+  // Zustand stores
+  const {
+    modular,
+    nodes,
+    meshGeometries,
+    curveGeometries,
+    setModular,
+    setNodes,
+    setGeometries
+  } = useModularStore();
+  
+  const {
+    gcodeData,
+    isAnimating,
+    currentMoveIndex,
+    animationSpeed,
+    gcodeText,
+    setGcodeData,
+    setGcodeText,
+    startAnimation,
+    pauseAnimation,
+    resetAnimation,
+    setAnimationSpeed,
+    setCurrentMoveIndex
+  } = useAnimationStore();
+  
+  const { setTargetPosition, setAllPositions } = useRobotArmStore();
+  
+  // Local refs
   const debounceTimeoutRef = useRef<number | null>(null);
   const evaluateRef = useRef<(m: Modular) => void>();
-
-  // Robot arm animation states
-  const [gcodeData, setGcodeData] = useState<ParsedGcode | null>(null);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const [currentMoveIndex, setCurrentMoveIndex] = useState(0);
-  const [animationSpeed, setAnimationSpeed] = useState(1.0);
-  const [animationProgress, setAnimationProgress] = useState(0); // 0-1 continuous progress
-  const animationRef = useRef<number | null>(null);
-  const gcodeTextRef = useRef<string>("");
 
   const evaluate = useCallback(
     (m: Modular) => {
@@ -94,13 +113,16 @@ function App() {
           }
         });
         
-        setMeshGeometries(meshes);
-        setCurveGeometries(curves);
+        setGeometries(meshes, curves);
         
         // Use curve-based gcode data for animation
         if (curves.length > 0) {
           const curveBasedGcode = convertCurveToGcodeMoves(curves);
           setGcodeData(curveBasedGcode);
+          
+          // Set all positions for robot arm
+          const positions = curveBasedGcode.moves.map(move => new Vector3(move.x, move.y, move.z));
+          setAllPositions(positions);
         }
         
         // Check for 'gcode' node and process its output (for export)
@@ -112,7 +134,7 @@ function App() {
             const textGcode = gcodeOutput![0]!.get("0")![0]!.data;
             
             if (textGcode && typeof textGcode === 'string') {
-              gcodeTextRef.current = textGcode;
+              setGcodeText(textGcode);
             }
           }
         } catch (error) {
@@ -130,40 +152,23 @@ function App() {
 
 
   // Animation control functions
-  const startAnimation = useCallback(() => {
-    setIsAnimating(true);
-  }, []);
-
-  const pauseAnimation = useCallback(() => {
-    setIsAnimating(false);
-  }, []);
-
-  const resetAnimation = useCallback(() => {
-    setIsAnimating(false);
-    setCurrentMoveIndex(0);
-    setAnimationProgress(0);
-  }, []);
-
   const handleSpeedChange = useCallback((speed: number) => {
     setAnimationSpeed(speed);
-  }, []);
+  }, [setAnimationSpeed]);
 
   const handleMoveChange = useCallback((moveIndex: number) => {
     setCurrentMoveIndex(moveIndex);
-    if (gcodeData) {
-      setAnimationProgress(moveIndex / (gcodeData.totalMoves - 1));
-    }
-  }, [gcodeData]);
+  }, [setCurrentMoveIndex]);
 
   // Export G-code function
   const exportGcode = useCallback(() => {
-    if (!gcodeTextRef.current) {
+    if (!gcodeText) {
       alert("No G-code data to export!");
       return;
     }
 
     // Create download link for G-code
-    const blob = new Blob([gcodeTextRef.current], { type: 'text/plain' });
+    const blob = new Blob([gcodeText], { type: 'text/plain' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
@@ -172,57 +177,23 @@ function App() {
     link.click();
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
-  }, []);
+  }, [gcodeText]);
 
-  // Smooth animation loop
+  // Cleanup animation on unmount
   useEffect(() => {
-    if (isAnimating && gcodeData) {
-      const totalMoves = gcodeData.totalMoves;
-      const progressIncrement = animationSpeed / (totalMoves * 60); // 60fps assumed
-      
-      const animate = () => {
-        setAnimationProgress(prev => {
-          const newProgress = prev + progressIncrement;
-          if (newProgress >= 1) {
-            setIsAnimating(false);
-            return 1;
-          }
-          return newProgress;
-        });
-        
-        // Update discrete index for compatibility
-        setCurrentMoveIndex(Math.floor(animationProgress * (totalMoves - 1)));
-        
-        if (isAnimating) {
-          animationRef.current = requestAnimationFrame(animate);
-        }
-      };
-      
-      animationRef.current = requestAnimationFrame(animate);
-      
-      return () => {
-        if (animationRef.current) {
-          cancelAnimationFrame(animationRef.current);
-        }
-      };
-    }
-  }, [isAnimating, animationSpeed, gcodeData, animationProgress]);
+    return () => {
+      pauseAnimation();
+    };
+  }, [pauseAnimation]);
 
-  // Get current target position for robot arm
-  const currentTargetPosition = useMemo(() => {
-    if (!gcodeData || !gcodeData.moves[currentMoveIndex]) {
-      return new Vector3(0, 0, 0);
+  // Update target position for robot arm
+  useEffect(() => {
+    if (gcodeData && gcodeData.moves[currentMoveIndex]) {
+      const move = gcodeData.moves[currentMoveIndex];
+      const targetPos = new Vector3(move.x, move.y, move.z);
+      setTargetPosition(targetPos);
     }
-    
-    const move = gcodeData.moves[currentMoveIndex];
-    // Since the parent group is rotated by -90 degrees around X axis,
-    // we don't need to apply the rotation here - the KukaArm is inside the rotated group
-    // and will use local coordinates
-    const targetPos = new Vector3(move.x, move.y, move.z);
-    
-    
-    return targetPos;
-  }, [gcodeData, currentMoveIndex]);
+  }, [gcodeData, currentMoveIndex, setTargetPosition]);
 
   const handleChange = useCallback(
     (id: string, value: number) => {
@@ -347,8 +318,8 @@ function App() {
     if (modular !== null) {
       modular.loadGraph(JSON.stringify(polygonstool.graph));
       // modular.loadGraph(JSON.stringify(brickWall.graph));
-      const nodes = modular.getNodes();
-      const numberNodes = nodes.filter((n) => n.variant === "Number" || n.variant === "NumberSlider");
+      const moduleNodes = modular.getNodes();
+      const numberNodes = moduleNodes.filter((n) => n.variant === "Number" || n.variant === "NumberSlider");
       setNodes(numberNodes);
       
       evaluate(modular);
@@ -361,7 +332,6 @@ function App() {
       if (debounceTimeoutRef.current) {
         clearTimeout(debounceTimeoutRef.current);
       }
-      
     };
   }, []);
 
@@ -440,12 +410,7 @@ function App() {
               })}
               
               {/* KUKA Robot Arm */}
-              <KukaArm 
-                targetPosition={currentTargetPosition}
-                isAnimating={isAnimating}
-                allPositions={gcodeData?.moves.map(move => new Vector3(move.x, move.y, move.z))}
-                animationProgress={animationProgress}
-              />
+              <KukaArm />
             </group>
           </Stage>
         )}

@@ -2,23 +2,30 @@ import { useRef } from 'react';
 import { Group, Vector3 } from 'three';
 import { useFrame } from '@react-three/fiber';
 import { Box, Line } from '@react-three/drei';
+import { useAnimationStore } from '../stores/useAnimationStore';
+import { useRobotArmStore } from '../stores/useRobotArmStore';
 
-interface KukaArmProps {
-  targetPosition?: Vector3;
-  isAnimating?: boolean;
-  allPositions?: Vector3[];
-  animationProgress?: number; // 0-1 progress through entire path
-}
+interface KukaArmProps {}
 
-export function KukaArm({ targetPosition, isAnimating = false, allPositions, animationProgress = 0 }: KukaArmProps) {
+export function KukaArm({}: KukaArmProps) {
+  // Zustand stores
+  const { isAnimating, animationProgress } = useAnimationStore();
+  const { 
+    currentPosition, 
+    allPositions, 
+    setCurrentPosition, 
+    updateCurrentPosition 
+  } = useRobotArmStore();
   const armRef = useRef<Group>(null);
   const endEffectorRef = useRef<Group>(null);
 
   // Placeholder robot arm structure - will be replaced with actual KUKA GLTF model
   
   useFrame((_, delta) => {
+    
     if (isAnimating && endEffectorRef.current) {
       if (allPositions && allPositions.length > 1) {
+        
         // Smooth path following using all positions
         const totalPoints = allPositions.length;
         const currentIndex = Math.floor(animationProgress * (totalPoints - 1));
@@ -30,21 +37,17 @@ export function KukaArm({ targetPosition, isAnimating = false, allPositions, ani
           const nextPoint = allPositions[nextIndex];
           const interpolatedPos = currentPoint.clone().lerp(nextPoint, localProgress);
           
-          // Smooth movement towards interpolated position
-          const currentPos = endEffectorRef.current.position;
-          const lerpFactor = delta * 8; // Smooth following
-          currentPos.lerp(interpolatedPos, lerpFactor);
+          // Update target position in store
+          setCurrentPosition(interpolatedPos);
         }
-      } else if (targetPosition) {
-        // Fallback to single target mode
-        const currentPos = endEffectorRef.current.position;
-        const lerpFactor = delta * 5;
-        const distance = currentPos.distanceTo(targetPosition);
-        if (distance < 0.1) {
-          currentPos.copy(targetPosition);
-        } else {
-          currentPos.lerp(targetPosition, lerpFactor);
-        }
+      }
+      
+      // Smooth movement towards target position
+      updateCurrentPosition(delta, 8);
+      
+      // Sync with Three.js position
+      if (endEffectorRef.current) {
+        endEffectorRef.current.position.copy(currentPosition);
       }
     }
   });
@@ -73,8 +76,8 @@ export function KukaArm({ targetPosition, isAnimating = false, allPositions, ani
         return Math.max(0, Math.min(maxIndex, positions.length - 1));
       };
       
-      const currentPos = endEffectorRef.current.position;
-      const lastPassedIndex = findLastPassedPoint(currentPos, allPositions, approximateIndex);
+      const robotPos = currentPosition;
+      const lastPassedIndex = findLastPassedPoint(robotPos, allPositions, approximateIndex);
       
       const visiblePoints: [number, number, number][] = [];
       
@@ -85,7 +88,7 @@ export function KukaArm({ targetPosition, isAnimating = false, allPositions, ani
       }
       
       // Add current robot position as the last point
-      visiblePoints.push([currentPos.x, currentPos.y, currentPos.z]);
+      visiblePoints.push([robotPos.x, robotPos.y, robotPos.z]);
       
       if (visiblePoints.length > 1) {
         return (
