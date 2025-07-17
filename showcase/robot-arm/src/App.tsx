@@ -292,23 +292,23 @@ function App() {
       "Export G-code": button(exportGcode),
       "Manual X": {
         value: manualTarget.x,
-        min: -2,
-        max: 2,
-        step: 0.01,
+        min: -300,
+        max: 300,
+        step: 1,
         onChange: (value: number) => updateManualTarget('x', value),
       },
       "Manual Y": {
         value: manualTarget.y,
-        min: -2,
-        max: 2,
-        step: 0.01,
+        min: -300,
+        max: 300,
+        step: 1,
         onChange: (value: number) => updateManualTarget('y', value),
       },
       "Manual Z": {
         value: manualTarget.z,
-        min: -2,
-        max: 2,
-        step: 0.01,
+        min: 0,
+        max: 300,
+        step: 1,
         onChange: (value: number) => updateManualTarget('z', value),
       },
       "Reset Position": button(() => {
@@ -378,6 +378,12 @@ function App() {
         camera={{ position: [10, 5, 15], fov: 45 }}
       >
         <color attach="background" args={["#d0d0d0"]} />
+        <ambientLight intensity={0.5} />
+        <directionalLight
+          position={[10, 10, 50]}
+          intensity={1}
+        />
+        
         
         {/* <Sky distance={50000} sunPosition={[0, 1, 0]} inclination={0} azimuth={0.25} /> */}
         {(meshGeometries.length > 0 || curveGeometries.length > 0) && (
@@ -448,7 +454,7 @@ function App() {
           makeDefault
         />
         
-        <axesHelper args={[5]} />
+        <axesHelper args={[500]} />
         <GizmoHelper margin={[50, 100]} alignment="bottom-left" scale={0.5}>
         <GizmoViewport
           axisColors={["hotpink", "aquamarine", "#3498DB"]}

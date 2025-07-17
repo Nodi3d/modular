@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import { Group, Object3D, Vector3 } from 'three';
+import { Group, Material, Mesh, MeshStandardMaterial, Object3D, Vector3 } from 'three';
 import { useFrame } from '@react-three/fiber';
 import URDFLoader from 'urdf-loader';
 import { useRobotAnimationStore } from '../stores/useRobotAnimationStore';
@@ -15,6 +15,7 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
   const [error, setError] = useState<string | null>(null);
   const [ikSolver, setIkSolver] = useState<any>(null);
   const [targetMarker, setTargetMarker] = useState<Object3D | null>(null);
+  const robotMaterialRef = useRef<Mesh | null>(null);
 
   
   
@@ -34,13 +35,13 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         
         // パッケージのパスを設定
         loader.packages = {
-          // 'kuka': '/kuka'
-          'kuka': '/kuka_lwr'
+          'kuka': '/kuka'
+          // 'kuka': '/kuka_lwr'
         };
         
         // URDFファイルを読み込み
-        // const urdfPath = '/kuka/urdf/unnamed.urdf';
-        const urdfPath = '/kuka_lwr/urdf/kuka_lwr.URDF';
+        const urdfPath = '/kuka/urdf/unnamed.urdf';
+        // const urdfPath = '/kuka_lwr/urdf/kuka_lwr.URDF';
         
         
         const robotModel = await new Promise<Object3D>((resolve, reject) => {
@@ -59,10 +60,10 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
             }
           );
         });
+
         
-        // ロボットモデルの設定
-        // robotModel.position.set(0, 0, 0);
-        // robotModel.scale.set(10, 10, 10);
+        
+        
         
         // ロボット用のグループを作成（参考実装に合わせる）
         const robotGroup = new Group();
@@ -71,7 +72,7 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         // Y軸が上向きになるよう調整（参考実装と同じ）
         robotGroup.rotateZ(-Math.PI/2);
         robotGroup.scale.set(5, 5, 5); // スケールを調整
-        robotGroup.position.set(0, 1, 0);
+        robotGroup.position.set(0, 300, 0);
         
         setRobot(robotGroup);
         setIsLoaded(true);
@@ -157,9 +158,9 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
 
         // IKChainの視覚化を設定
         const ikHelper = new IKHelper(chain, {
-          linkWidth: 0.04,      // リンクの太さ
-          jointRadius: 0.06,    // ジョイントの半径
-          jointHeight: 0.02,    // ジョイントの高さ
+          linkWidth: 0.4,      // リンクの太さ
+          jointRadius: 0.6,    // ジョイントの半径
+          jointHeight: 0.2,    // ジョイントの高さ
           linkColor: 0x00ff00,  // 緑色で視覚化
           JointColor: 0x0000ff  // 青色でジョイントを視覚化
         });
@@ -184,6 +185,8 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         setIkSolver(solver);
         console.log('IK Solver initialized successfully');
         console.log('Target position:', target.position);
+
+        
         
       } catch (err) {
         console.error('Failed to load URDF:', err);
@@ -193,6 +196,8 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
     
     loadURDF();
   }, []);
+
+  
 
   useFrame((_, delta) => {
     if (robot && ikSolver && targetMarker) {
@@ -334,11 +339,13 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
       )}
       
       {/* URDFロボットモデル */}
-      {robot && <primitive object={robot} />}
-      
+      {robot && 
+          <primitive object={robot}/>
+          }
+
       {/* Current position marker (target) */}
       <mesh position={currentPosition}>
-        <sphereGeometry args={[0.1, 16, 16]} />
+        <sphereGeometry args={[10, 16, 16]} />
         <meshStandardMaterial 
           color="#ff0000" 
           emissive="#ff0000" 
