@@ -1,4 +1,4 @@
-import { OrbitControls, Stage, Line } from "@react-three/drei";
+import { OrbitControls, Stage, Line, GizmoHelper, GizmoViewport } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useControls, button } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
@@ -292,23 +292,23 @@ function App() {
       "Export G-code": button(exportGcode),
       "Manual X": {
         value: manualTarget.x,
-        min: -200,
-        max: 200,
-        step: 1,
+        min: -2,
+        max: 2,
+        step: 0.01,
         onChange: (value: number) => updateManualTarget('x', value),
       },
       "Manual Y": {
         value: manualTarget.y,
-        min: -200,
-        max: 200,
-        step: 1,
+        min: -2,
+        max: 2,
+        step: 0.01,
         onChange: (value: number) => updateManualTarget('y', value),
       },
       "Manual Z": {
         value: manualTarget.z,
-        min: -200,
-        max: 200,
-        step: 1,
+        min: -2,
+        max: 2,
+        step: 0.01,
         onChange: (value: number) => updateManualTarget('z', value),
       },
       "Reset Position": button(() => {
@@ -447,6 +447,14 @@ function App() {
           maxPolarAngle={Math.PI / 1.9}
           makeDefault
         />
+        
+        <axesHelper args={[5]} />
+        <GizmoHelper margin={[50, 100]} alignment="bottom-left" scale={0.5}>
+        <GizmoViewport
+          axisColors={["hotpink", "aquamarine", "#3498DB"]}
+          labelColor="black"
+        />
+      </GizmoHelper>
       </Canvas>
       
       {/* Animation Controls */}

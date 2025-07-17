@@ -70,8 +70,9 @@ class IKChain {
     const [urdfLink] = urdfJoint.children;
     const { children } = urdfLink;
     const nextUrdfJoint = children.find((child) => child.isURDFJoint);
-    const isEndEffector =
-      ikJoint.isFixed && urdfJoint.id !== this._urdfBaseJointId;
+    
+  
+    const isEndEffector = ikJoint.isFixed && urdfJoint.id !== this._urdfBaseJointId;
 
     if (!nextUrdfJoint || isEndEffector) {
       this._endEffector = ikJoint;

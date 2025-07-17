@@ -6,7 +6,7 @@ class IKJoint extends Group {
   constructor(urdfJoint = null) {
     super();
     this.position.set(0, 0, 0);
-    this.axis = new Vector3(0, 1, 0);
+    this.axis = new Vector3(0, 0, 1);
     this.isRootJoint = true;
     this.isHinge = false;
     this.isFixed = false;
