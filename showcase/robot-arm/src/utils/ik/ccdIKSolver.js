@@ -25,6 +25,16 @@ function ccdIKSolver(ikChain, targetPosition, tolerance, maxNumOfIterations) {
         ikJoint.updateMatrixWorld();
         continue;
       }
+      
+      // 関節が完全に固定されている場合もスキップ
+      if (ikJoint.limit && ikJoint.limit.lower === 0 && ikJoint.limit.upper === 0) {
+        ikJoint.quaternion.setFromAxisAngle(ikJoint.axis, 0);
+        ikJoint.updateMatrixWorld();
+        if (Math.random() < 0.05) { // 5%の確率でログ出力
+          console.log(`Joint ${ikJoint.jointName || 'unknown'} (${ikJoint.name || 'no-name'}) is locked at 0 degrees - skipping IK`);
+        }
+        continue;
+      }
 
       endEffector.getWorldPosition(endEffectorWorldPosition);
 
@@ -85,20 +95,28 @@ function ccdIKSolver(ikChain, targetPosition, tolerance, maxNumOfIterations) {
       // Apply hinge limits.
 
       if (ikJoint.limit) {
-        const ikJointRotationAngle = getIKJointRotationAngle(ikJoint);
-        const [clampedIKJointRotationAngle, isClamped] =
-          clampIKJointRotationAngle(ikJointRotationAngle, ikJoint.limit);
-
-        if (isClamped) {
-          // 制限違反のログ出力（デバッグ用）
-          if (Math.random() < 0.01) { // 1%の確率でログ出力（頻繁すぎないように）
-            console.log(`Joint ${ikJoint.jointName || 'unknown'} clamped: ${ikJointRotationAngle.toFixed(3)} -> ${clampedIKJointRotationAngle.toFixed(3)} (limits: ${ikJoint.limit.lower.toFixed(3)} to ${ikJoint.limit.upper.toFixed(3)})`);
+        // 関節が完全に固定されている場合（lower == upper == 0）
+        if (ikJoint.limit.lower === 0 && ikJoint.limit.upper === 0) {
+          // 回転を完全にリセット
+          const currentAngle = getIKJointRotationAngle(ikJoint);
+          if (Math.abs(currentAngle) > 0.001) { // 現在の角度が0でない場合のみログ
+            console.log(`Joint ${ikJoint.jointName || 'unknown'} was at ${currentAngle.toFixed(3)} rad, resetting to 0 (fixed joint)`);
           }
-          
-          ikJoint.quaternion.setFromAxisAngle(
-            ikJoint.axis,
-            clampedIKJointRotationAngle
-          );
+          ikJoint.quaternion.setFromAxisAngle(ikJoint.axis, 0);
+        } else {
+          const ikJointRotationAngle = getIKJointRotationAngle(ikJoint);
+          const [clampedIKJointRotationAngle, isClamped] =
+            clampIKJointRotationAngle(ikJointRotationAngle, ikJoint.limit);
+
+          if (isClamped) {
+            // 制限違反のログ出力（デバッグ用）
+            console.log(`Joint ${ikJoint.jointName || 'unknown'} clamped: ${ikJointRotationAngle.toFixed(3)} -> ${clampedIKJointRotationAngle.toFixed(3)} (limits: ${ikJoint.limit.lower.toFixed(3)} to ${ikJoint.limit.upper.toFixed(3)})`);
+            
+            ikJoint.quaternion.setFromAxisAngle(
+              ikJoint.axis,
+              clampedIKJointRotationAngle
+            );
+          }
         }
       }
 

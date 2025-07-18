@@ -34,6 +34,7 @@ class IKChain {
   createFromURDFRobot(urdfRobot, rootJointParent, externalLimitsMap = null) {
     this._externalLimitsMap = externalLimitsMap;
     this._rootJoint = new IKJoint();
+    this._rootJoint.jointName = 'root'; // ルートジョイントに名前を設定
     this.addJoint(rootJointParent, this._rootJoint);
 
     const urdfRobotBaseJoint = this._findURDFBaseJoint(urdfRobot);

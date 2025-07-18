@@ -32,16 +32,16 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
   useEffect(() => {
     const loadURDF = async () => {
       try {
-        // まず関節制限値を読み込み（一時的にコメントアウト）
+        // まず関節制限値を読み込み
         console.log('Starting URDF load process...');
         let limitsMap: any = null;
-        // try {
-        //   limitsMap = await loadJointLimits('/kuka/joint_limits.yml');
-        //   setJointLimits(limitsMap);
-        //   console.log('Joint limits loaded successfully:', limitsMap);
-        // } catch (limitsError) {
-        //   console.warn('Failed to load joint limits, using URDF limits only:', limitsError);
-        // }
+        try {
+          const { loadJointLimits } = await import('../utils/jointLimitsLoader');
+          limitsMap = await loadJointLimits('/kuka/joint_limits.yml');
+          console.log('Joint limits loaded successfully:', limitsMap);
+        } catch (limitsError) {
+          console.warn('Failed to load joint limits, using URDF limits only:', limitsError);
+        }
 
         const loader = new URDFLoader();
         
@@ -83,8 +83,8 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         
         // Y軸が上向きになるよう調整（参考実装と同じ）
         robotGroup.rotateZ(-Math.PI/2);
-        robotGroup.scale.set(5, 5, 5); // スケールを調整
-        robotGroup.position.set(0, 300, 0);
+        robotGroup.scale.set(20, 20, 20); // スケールを調整
+        robotGroup.position.set(0, 800, -200);
         
         setRobot(robotGroup);
         setIsLoaded(true);
@@ -101,19 +101,30 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         // IKChainの詳細構造をデバッグ出力
         console.log('=== IKChain Debug Info ===');
         console.log('Chain length:', chain.ikJoints.length);
-        console.log('Chain joints:', chain.ikJoints.map((j: any) => ({
+        console.log('Chain joints:', chain.ikJoints.map((j: any, idx: number) => ({
+          index: idx,
           jointName: j.jointName,
           name: j.name,
           position: j.position,
           rotation: j.rotation,
           isFixed: j.isFixed,
           isHinge: j.isHinge,
+          isRootJoint: j.isRootJoint,
+          axis: j.axis,
           originalUrdfLimit: j.originalUrdfLimit,
           externalLimit: j.externalLimit,
           finalLimit: j.limit
         })));
         console.log('End effector:', chain.endEffector);
         console.log('Root joint:', chain.rootJoint);
+        
+        // 各ジョイントの制限値を出力
+        console.log('=== Joint Limits Summary ===');
+        chain.ikJoints.forEach((joint: any, idx: number) => {
+          if (joint.limit) {
+            console.log(`Joint ${idx}: ${joint.jointName || 'unknown'} - limits: [${joint.limit.lower.toFixed(3)}, ${joint.limit.upper.toFixed(3)}]`);
+          }
+        });
         
         // URDFロボットの構造を調査
         console.log('=== URDF Robot Structure ===');
