@@ -90,6 +90,11 @@ function ccdIKSolver(ikChain, targetPosition, tolerance, maxNumOfIterations) {
           clampIKJointRotationAngle(ikJointRotationAngle, ikJoint.limit);
 
         if (isClamped) {
+          // 制限違反のログ出力（デバッグ用）
+          if (Math.random() < 0.01) { // 1%の確率でログ出力（頻繁すぎないように）
+            console.log(`Joint ${ikJoint.jointName || 'unknown'} clamped: ${ikJointRotationAngle.toFixed(3)} -> ${clampedIKJointRotationAngle.toFixed(3)} (limits: ${ikJoint.limit.lower.toFixed(3)} to ${ikJoint.limit.upper.toFixed(3)})`);
+          }
+          
           ikJoint.quaternion.setFromAxisAngle(
             ikJoint.axis,
             clampedIKJointRotationAngle

@@ -8,7 +8,17 @@
           "speed": 0.0
         },
         "min": {
-          "position": -1.0
+          "position": 0.0
+        }
+      },
+      {
+        "max": {
+          "effort": 0.0,
+          "position": 0.0,
+          "speed": 0.0
+        },
+        "min": {
+          "position": 0.0
         }
       },
       {
@@ -53,6 +63,7 @@
       }
     ],
     "names": [
+      "kuka-arm-000-2_link_joint",
       "kuka-arm-000_link_joint",
       "kuka-arm-001_link_joint",
       "kuka-arm-002_link_joint",

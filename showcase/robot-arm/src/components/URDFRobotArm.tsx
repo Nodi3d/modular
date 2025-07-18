@@ -1,10 +1,11 @@
 import { useEffect, useRef, useState } from 'react';
-import { Group, Material, Mesh, MeshStandardMaterial, Object3D, Vector3 } from 'three';
+import { Group, Object3D, Vector3 } from 'three';
 import { useFrame } from '@react-three/fiber';
 import URDFLoader from 'urdf-loader';
 import { useRobotAnimationStore } from '../stores/useRobotAnimationStore';
 // @ts-ignore
 import { IKSolver, IKChain, IKHelper } from '../utils/ik';
+// import { loadJointLimits, type JointLimitsMap } from '../utils/jointLimitsLoader';
 
 interface URDFRobotArmProps {}
 
@@ -15,7 +16,7 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
   const [error, setError] = useState<string | null>(null);
   const [ikSolver, setIkSolver] = useState<any>(null);
   const [targetMarker, setTargetMarker] = useState<Object3D | null>(null);
-  const robotMaterialRef = useRef<Mesh | null>(null);
+  // const [jointLimits, setJointLimits] = useState<JointLimitsMap | null>(null);
 
   
   
@@ -31,6 +32,17 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
   useEffect(() => {
     const loadURDF = async () => {
       try {
+        // まず関節制限値を読み込み（一時的にコメントアウト）
+        console.log('Starting URDF load process...');
+        let limitsMap: any = null;
+        // try {
+        //   limitsMap = await loadJointLimits('/kuka/joint_limits.yml');
+        //   setJointLimits(limitsMap);
+        //   console.log('Joint limits loaded successfully:', limitsMap);
+        // } catch (limitsError) {
+        //   console.warn('Failed to load joint limits, using URDF limits only:', limitsError);
+        // }
+
         const loader = new URDFLoader();
         
         // パッケージのパスを設定
@@ -84,17 +96,21 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         
         // IKChainを作成（参考実装に合わせて親Groupを分離）
         const chain = new IKChain();
-        chain.createFromURDFRobot(robotModel, robotGroup);
+        chain.createFromURDFRobot(robotModel, robotGroup, limitsMap);
         
         // IKChainの詳細構造をデバッグ出力
         console.log('=== IKChain Debug Info ===');
         console.log('Chain length:', chain.ikJoints.length);
         console.log('Chain joints:', chain.ikJoints.map((j: any) => ({
+          jointName: j.jointName,
           name: j.name,
           position: j.position,
           rotation: j.rotation,
           isFixed: j.isFixed,
-          isHinge: j.isHinge
+          isHinge: j.isHinge,
+          originalUrdfLimit: j.originalUrdfLimit,
+          externalLimit: j.externalLimit,
+          finalLimit: j.limit
         })));
         console.log('End effector:', chain.endEffector);
         console.log('Root joint:', chain.rootJoint);

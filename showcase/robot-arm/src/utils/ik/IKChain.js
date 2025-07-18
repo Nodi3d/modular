@@ -7,6 +7,7 @@ class IKChain {
     this._rootJoint = null;
     this._urdfBaseJointId = '';
     this._endEffector = null;
+    this._externalLimitsMap = null; // 外部制限値のマップ
   }
 
   addJoint(parent, ikJoint) {
@@ -30,12 +31,13 @@ class IKChain {
     return this._urdfJoints;
   }
 
-  createFromURDFRobot(urdfRobot, rootJointParent) {
+  createFromURDFRobot(urdfRobot, rootJointParent, externalLimitsMap = null) {
+    this._externalLimitsMap = externalLimitsMap;
     this._rootJoint = new IKJoint();
     this.addJoint(rootJointParent, this._rootJoint);
 
     const urdfRobotBaseJoint = this._findURDFBaseJoint(urdfRobot);
-    this._urdfBaseJointId = urdfRobotBaseJoint.id;
+    this._urdfBaseJointId = urdfRobotBaseJoint.name;
 
     this._traverseURDFJoints(this._rootJoint, urdfRobotBaseJoint);
 
@@ -63,7 +65,10 @@ class IKChain {
   _traverseURDFJoints(parentIkJoint, urdfJoint) {
     this._urdfJoints.push(urdfJoint);
 
-    const ikJoint = new IKJoint(urdfJoint);
+    // 外部制限値を取得
+    const externalLimit = this._externalLimitsMap ? this._externalLimitsMap[urdfJoint.name] : null;
+    
+    const ikJoint = new IKJoint(urdfJoint, externalLimit);
     this.addJoint(parentIkJoint, ikJoint);
     parentIkJoint = ikJoint;
 
@@ -72,7 +77,7 @@ class IKChain {
     const nextUrdfJoint = children.find((child) => child.isURDFJoint);
     
   
-    const isEndEffector = ikJoint.isFixed && urdfJoint.id !== this._urdfBaseJointId;
+    const isEndEffector = ikJoint.isFixed && urdfJoint.name !== this._urdfBaseJointId;
 
     if (!nextUrdfJoint || isEndEffector) {
       this._endEffector = ikJoint;
