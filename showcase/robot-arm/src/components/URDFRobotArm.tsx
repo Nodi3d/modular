@@ -16,10 +16,7 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
   const [error, setError] = useState<string | null>(null);
   const [ikSolver, setIkSolver] = useState<any>(null);
   const [targetMarker, setTargetMarker] = useState<Object3D | null>(null);
-  // const [jointLimits, setJointLimits] = useState<JointLimitsMap | null>(null);
 
-  
-  
   const { 
     currentPosition,
     progressiveCurvePoints,
@@ -27,153 +24,52 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
     updateAnimationState
   } = useRobotAnimationStore();
 
-  
-
   useEffect(() => {
     const loadURDF = async () => {
       try {
-        // まず関節制限値を読み込み
-        console.log('Starting URDF load process...');
         let limitsMap: any = null;
         try {
           const { loadJointLimits } = await import('../utils/jointLimitsLoader');
           limitsMap = await loadJointLimits('/kuka/joint_limits.yml');
-          console.log('Joint limits loaded successfully:', limitsMap);
         } catch (limitsError) {
-          console.warn('Failed to load joint limits, using URDF limits only:', limitsError);
         }
 
         const loader = new URDFLoader();
         
-        // パッケージのパスを設定
         loader.packages = {
           'kuka': '/kuka'
-          // 'kuka': '/kuka_lwr'
         };
         
-        // URDFファイルを読み込み
         const urdfPath = '/kuka/urdf/unnamed.urdf';
-        // const urdfPath = '/kuka_lwr/urdf/kuka_lwr.URDF';
         
         
         const robotModel = await new Promise<Object3D>((resolve, reject) => {
           loader.load(
             urdfPath,
             (robot: any) => {
-              console.log('URDF loaded successfully:', robot);
               resolve(robot);
             },
-            (progress: any) => {
-              console.log('Loading progress:', progress);
-            },
+            (progress: any) => {},
             (error: any) => {
-              console.error('URDF loading error:', error);
               reject(error);
             }
           );
         });
 
-        
-        
-        
-        
-        // ロボット用のグループを作成（参考実装に合わせる）
         const robotGroup = new Group();
         robotGroup.add(robotModel);
         
-        // Y軸が上向きになるよう調整（参考実装と同じ）
         robotGroup.rotateZ(-Math.PI/2);
-        robotGroup.scale.set(20, 20, 20); // スケールを調整
+        robotGroup.scale.set(20, 20, 20);
         robotGroup.position.set(0, 800, -200);
         
         setRobot(robotGroup);
         setIsLoaded(true);
-        console.log('Robot loaded and configured with group');
         
-        // ターゲットマーカーを作成
         const target = new Object3D();
         setTargetMarker(target);
-        
-        // IKChainを作成（参考実装に合わせて親Groupを分離）
         const chain = new IKChain();
         chain.createFromURDFRobot(robotModel, robotGroup, limitsMap);
-        
-        // IKChainの詳細構造をデバッグ出力
-        console.log('=== IKChain Debug Info ===');
-        console.log('Chain length:', chain.ikJoints.length);
-        console.log('Chain joints:', chain.ikJoints.map((j: any, idx: number) => ({
-          index: idx,
-          jointName: j.jointName,
-          name: j.name,
-          position: j.position,
-          rotation: j.rotation,
-          isFixed: j.isFixed,
-          isHinge: j.isHinge,
-          isRootJoint: j.isRootJoint,
-          axis: j.axis,
-          originalUrdfLimit: j.originalUrdfLimit,
-          externalLimit: j.externalLimit,
-          finalLimit: j.limit
-        })));
-        console.log('End effector:', chain.endEffector);
-        console.log('Root joint:', chain.rootJoint);
-        
-        // 各ジョイントの制限値を出力
-        console.log('=== Joint Limits Summary ===');
-        chain.ikJoints.forEach((joint: any, idx: number) => {
-          if (joint.limit) {
-            console.log(`Joint ${idx}: ${joint.jointName || 'unknown'} - limits: [${joint.limit.lower.toFixed(3)}, ${joint.limit.upper.toFixed(3)}]`);
-          }
-        });
-        
-        // URDFロボットの構造を調査
-        console.log('=== URDF Robot Structure ===');
-        console.log('Robot model:', robotModel);
-        console.log('Robot children:', robotModel.children);
-        
-        // End effector linkを探す
-        const findEndEffectorLink = (obj: any, path = ''): any => {
-          if (obj.name && obj.name.includes('end_effector')) {
-            console.log('Found end effector link:', obj.name, 'at path:', path);
-            return obj;
-          }
-          for (const child of obj.children || []) {
-            const result = findEndEffectorLink(child, path + '/' + (child.name || 'unnamed'));
-            if (result) return result;
-          }
-          return null;
-        };
-        
-        const endEffectorLink = findEndEffectorLink(robotModel);
-        console.log('End effector link found:', endEffectorLink);
-        
-        // URDFモデル全体の構造を調査
-        const logURDFStructure = (obj: any, depth = 0) => {
-          const indent = '  '.repeat(depth);
-          console.log(`${indent}${obj.name || 'unnamed'} (${obj.constructor.name})`);
-          if (obj.isURDFJoint) {
-            console.log(`${indent}  - Joint ID: ${obj.id}`);
-            console.log(`${indent}  - Joint Type: ${obj.jointType}`);
-          }
-          if (obj.isURDFLink) {
-            console.log(`${indent}  - Link ID: ${obj.id}`);
-          }
-          for (const child of obj.children || []) {
-            logURDFStructure(child, depth + 1);
-          }
-        };
-        
-        console.log('=== Full URDF Structure ===');
-        logURDFStructure(robotModel);
-        
-        // ロボットモデルの子要素を調査
-        console.log('=== Robot Model Children ===');
-        console.log('Robot model children count:', robotModel.children.length);
-        robotModel.children.forEach((child: any, index: number) => {
-          console.log(`Child ${index}:`, child.name, child.constructor.name);
-        });
-        
-        // IKソルバーを初期化
         const solver = new IKSolver({
           tolerance: 0.01,
           maxNumOfIterations: 20,
@@ -183,40 +79,20 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         solver.ikChain = chain;
         solver.target = target;
 
-        // IKChainの視覚化を設定
         const ikHelper = new IKHelper(chain, {
-          linkWidth: 0.4,      // リンクの太さ
-          jointRadius: 0.6,    // ジョイントの半径
-          jointHeight: 0.2,    // ジョイントの高さ
-          linkColor: 0x00ff00,  // 緑色で視覚化
-          JointColor: 0x0000ff  // 青色でジョイントを視覚化
+          linkWidth: 0.4,
+          jointRadius: 0.6,
+          jointHeight: 0.2,
+          linkColor: 0x00ff00,
+          JointColor: 0x0000ff
         });
         ikHelper.visualizeIKChain();
-        
-        // ターゲット位置をend effectorの現在位置に初期化（参考実装と同じ）
         const endEffectorWorldPos = new Vector3();
         chain.endEffector.getWorldPosition(endEffectorWorldPos);
         target.position.copy(endEffectorWorldPos);
-        console.log('Target initialized to end effector position:', endEffectorWorldPos);
-        
-        // 注意: rootJointは明示的に追加しない（robotGroup内に含まれるため）
-        
-        // IKChainの各ジョイントの位置をデバッグ出力
-        console.log('=== IKChain Joint Positions ===');
-        chain.ikJoints.forEach((joint: any, index: number) => {
-          const worldPos = new Vector3();
-          joint.getWorldPosition(worldPos);
-          console.log(`Joint ${index} (${joint.name || 'unnamed'}):`, worldPos);
-        });
-        
         setIkSolver(solver);
-        console.log('IK Solver initialized successfully');
-        console.log('Target position:', target.position);
 
-        
-        
       } catch (err) {
-        console.error('Failed to load URDF:', err);
         setError(err instanceof Error ? err.message : String(err));
       }
     };
@@ -224,100 +100,29 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
     loadURDF();
   }, []);
 
-  
-
   useFrame((_, delta) => {
     if (robot && ikSolver && targetMarker) {
       if (isAnimating) {
         updateAnimationState(delta);
       }
-      
-      // ターゲット位置を更新
-      //ただし、y座標 -> currentPositionのZを採用
-      // z座標 -> currentPositionのYを採用としたい
       targetMarker.position.copy(currentPosition);
       targetMarker.position.z = -currentPosition.y;
       targetMarker.position.y = currentPosition.z;
 
-      // ターゲット位置の座標系を確認・調整
-      if (Math.random() < 0.01) {
-        console.log('=== Target Position Debug ===');
-        console.log('Current position (store):', currentPosition);
-        console.log('Target marker position:', targetMarker.position);
-        console.log('Robot position:', robot.position);
-        console.log('Robot scale:', robot.scale);
-      }
-      
-      // IKChainの視覚要素を手動更新
       if (ikSolver.ikChain) {
         ikSolver.ikChain.ikJoints.forEach((joint: any) => {
           joint.updateMatrixWorld(true);
         });
       }
-      
-      // IKソルバーでcurrentPositionから関節角度を計算
       try {
         const solveResult = ikSolver.solve();
-        
-        // 実際のend effector位置を計算
         if (ikSolver.ikChain && ikSolver.ikChain.endEffector) {
           const endEffector = ikSolver.ikChain.endEffector;
           const worldPos = new Vector3();
           endEffector.getWorldPosition(worldPos);
           
-          
-          
-          
-          
-          // 実際のURDFモデルからend effector位置を取得
-          const findURDFEndEffector = (obj: any): any => {
-            if (obj.name && obj.name.includes('end_effector_link')) {
-              return obj;
-            }
-            for (const child of obj.children || []) {
-              const result = findURDFEndEffector(child);
-              if (result) return result;
-            }
-            return null;
-          };
-          
-          
-          
-          // デバッグ情報を定期的に更新
-          if (Math.random() < 0.02) { // 2%の確率で出力
-            const debugData = {
-              targetPosition: currentPosition,
-              endEffectorWorldPos: worldPos,
-              solveResult: solveResult,
-              jointAngles: ikSolver.ikChain.ikJoints.map((j: any) => {
-                const jointWorldPos = new Vector3();
-                j.getWorldPosition(jointWorldPos);
-                return {
-                  name: j.name,
-                  angle: j.angle || 0,
-                  localPosition: j.position,
-                  worldPosition: jointWorldPos,
-                  parentName: j.parent?.name || 'no parent'
-                };
-              }),
-              distance: worldPos.distanceTo(new Vector3(currentPosition.x, currentPosition.y, currentPosition.z))
-            };
-            
-            console.log('=== IK Solver Debug ===');
-            console.log('Target:', currentPosition);
-            console.log('IK Chain end effector pos:', worldPos);
-            
-            console.log('Distance from target:', debugData.distance);
-            console.log('Joint details:', debugData.jointAngles);
-            
-            // IKChainとURDFモデルの関連性を確認
-            console.log('=== IKChain vs URDF Sync Check ===');
-            console.log('IKChain root joint parent:', ikSolver.ikChain.rootJoint.parent?.name);
-            console.log('Robot model children:', robot.children.map((c: any) => c.name));
-          }
         }
       } catch (error) {
-        console.error('IK solver error:', error);
       }
     }
   });
@@ -365,12 +170,8 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         </line>
       )}
       
-      {/* URDFロボットモデル */}
-      {robot && 
-          <primitive object={robot}/>
-          }
+      {robot && <primitive object={robot}/>}
 
-      {/* Current position marker (target) */}
       <mesh position={currentPosition}>
         <sphereGeometry args={[10, 16, 16]} />
         <meshStandardMaterial 
@@ -381,10 +182,6 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
           opacity={0.6}
         />
       </mesh>
-      
-      
-      
-      
       
     </group>
   );
