@@ -316,7 +316,7 @@ function App() {
         setCurrentPosition(new Vector3(0, 0, 0));
       }),
     };
-  }, [nodes, handleChange, exportGcode, manualTarget, updateManualTarget, setCurrentPosition]);
+  }, [nodes, handleChange, exportGcode]);
 
   useControls(params, [params]);
 
