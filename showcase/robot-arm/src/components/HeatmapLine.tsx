@@ -1,114 +1,102 @@
 import { useMemo } from 'react';
-import { BufferGeometry, Float32BufferAttribute, ShaderMaterial, Vector3 } from 'three';
-import { extend } from '@react-three/fiber';
-
-// Extend Three.js for React Three Fiber
-extend({ BufferGeometry, ShaderMaterial });
+import { Vector3, Color, Vector2 } from 'three';
+import { Line2 } from 'three/examples/jsm/lines/Line2.js';
+import { LineGeometry } from 'three/examples/jsm/lines/LineGeometry.js';
+import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 
 interface HeatmapLineProps {
   points: Vector3[] | [number, number, number][];
   lineWidth?: number;
 }
 
-export function HeatmapLine({ points, lineWidth = 0.5 }: HeatmapLineProps) {
-  const { geometry, material, minY, maxY } = useMemo(() => {
-    if (points.length < 2) {
-      return { 
-        geometry: new BufferGeometry(), 
-        material: new ShaderMaterial(), 
-        minY: 0, 
-        maxY: 1 
-      };
-    }
+export function HeatmapLine({ points, lineWidth = 2 }: HeatmapLineProps) {
+  const line2 = useMemo(() => {
+    if (points.length < 2) return null;
 
-    // Create geometry from points
-    const positions = new Float32Array(points.length * 3);
-    let minY = Infinity;
-    let maxY = -Infinity;
+    // Convert points to array format
+    const positions: number[] = [];
+    const colors: number[] = [];
+    
+    let minZ = Infinity;
+    let maxZ = -Infinity;
 
-    points.forEach((point, i) => {
+    // First pass: find min/max Z for normalization
+    points.forEach((point) => {
+      const z = Array.isArray(point) ? point[2] : point.z;
+      minZ = Math.min(minZ, z);
+      maxZ = Math.max(maxZ, z);
+    });
+
+    // Avoid division by zero
+    const zRange = maxZ - minZ || 1;
+
+    // Second pass: create positions and colors
+    points.forEach((point) => {
       if (Array.isArray(point)) {
-        positions[i * 3] = point[0];
-        positions[i * 3 + 1] = point[1];
-        positions[i * 3 + 2] = point[2];
+        positions.push(point[0], point[1], point[2]);
         
-        // Track min/max Y for normalization
-        minY = Math.min(minY, point[1]);
-        maxY = Math.max(maxY, point[1]);
+        // Calculate normalized Z for heatmap
+        const normalizedZ = (point[2] - minZ) / zRange;
+        const color = getHeatmapColor(normalizedZ);
+        colors.push(color.r, color.g, color.b);
       } else {
-        positions[i * 3] = point.x;
-        positions[i * 3 + 1] = point.y;
-        positions[i * 3 + 2] = point.z;
+        positions.push(point.x, point.y, point.z);
         
-        // Track min/max Y for normalization
-        minY = Math.min(minY, point.y);
-        maxY = Math.max(maxY, point.y);
+        // Calculate normalized Z for heatmap
+        const normalizedZ = (point.z - minZ) / zRange;
+        const color = getHeatmapColor(normalizedZ);
+        colors.push(color.r, color.g, color.b);
       }
     });
 
-    const geometry = new BufferGeometry();
-    geometry.setAttribute('position', new Float32BufferAttribute(positions, 3));
+    // Create Line2 geometry
+    const geometry = new LineGeometry();
+    geometry.setPositions(positions);
+    geometry.setColors(colors);
 
-    // Shader material with heatmap colors
-    const material = new ShaderMaterial({
-      uniforms: {
-        minY: { value: minY },
-        maxY: { value: maxY }
-      },
-      vertexShader: `
-        uniform float minY;
-        uniform float maxY;
-        varying float vNormalizedY;
-        
-        void main() {
-          vec4 worldPosition = modelMatrix * vec4(position, 1.0);
-          vNormalizedY = (worldPosition.y - minY) / (maxY - minY);
-          gl_Position = projectionMatrix * viewMatrix * worldPosition;
-        }
-      `,
-      fragmentShader: `
-        varying float vNormalizedY;
-        
-        vec3 heatmapColor(float t) {
-          // Clamp t to [0, 1]
-          t = clamp(t, 0.0, 1.0);
-          
-          vec3 color;
-          
-          if (t < 0.25) {
-            // Blue to Cyan
-            color = mix(vec3(0.0, 0.0, 1.0), vec3(0.0, 1.0, 1.0), t * 4.0);
-          } else if (t < 0.5) {
-            // Cyan to Green
-            color = mix(vec3(0.0, 1.0, 1.0), vec3(0.0, 1.0, 0.0), (t - 0.25) * 4.0);
-          } else if (t < 0.75) {
-            // Green to Yellow
-            color = mix(vec3(0.0, 1.0, 0.0), vec3(1.0, 1.0, 0.0), (t - 0.5) * 4.0);
-          } else {
-            // Yellow to Red
-            color = mix(vec3(1.0, 1.0, 0.0), vec3(1.0, 0.0, 0.0), (t - 0.75) * 4.0);
-          }
-          
-          return color;
-        }
-        
-        void main() {
-          vec3 color = heatmapColor(vNormalizedY);
-          gl_FragColor = vec4(color, 1.0);
-        }
-      `,
+    // Create Line2 material
+    const material = new LineMaterial({
+      color: 0xffffff,
       linewidth: lineWidth,
+      vertexColors: true,
+      resolution: new Vector2(window.innerWidth, window.innerHeight),
+      dashed: false,
     });
 
-    return { geometry, material, minY, maxY };
+    // Create Line2 object
+    const line2Object = new Line2(geometry, material);
+    line2Object.computeLineDistances();
+
+    return line2Object;
   }, [points, lineWidth]);
 
-  if (points.length < 2) return null;
+  if (!line2) return null;
 
-  return (
-    <line>
-      <primitive object={geometry} attach="geometry" />
-      <primitive object={material} attach="material" />
-    </line>
-  );
+  return <primitive object={line2} />;
+}
+
+function getHeatmapColor(t: number): Color {
+  // Clamp t to [0, 1]
+  t = Math.max(0, Math.min(1, t));
+  
+  const color = new Color();
+  
+  if (t < 0.25) {
+    // Blue to Cyan
+    color.setRGB(0, t * 4, 1);
+  } else if (t < 0.5) {
+    // Cyan to Green
+    const factor = (t - 0.25) * 4;
+    color.setRGB(0, 1, 1 - factor);
+  } else if (t < 0.75) {
+    // Green to Yellow
+    const factor = (t - 0.5) * 4;
+    color.setRGB(factor, 1, 0);
+  } else {
+    // Yellow to Red
+    const factor = (t - 0.75) * 4;
+    color.setRGB(1, 1 - factor, 0);
+  }
+  
+  return color;
 }

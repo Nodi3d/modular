@@ -1,4 +1,4 @@
-import { OrbitControls, Stage, GizmoHelper, GizmoViewport, MeshTransmissionMaterial, Lightformer, Environment, useEnvironment, Line } from "@react-three/drei";
+import { OrbitControls, Stage, GizmoHelper, GizmoViewport, MeshTransmissionMaterial, Lightformer, Environment, useEnvironment } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useControls, button } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
@@ -451,16 +451,11 @@ function App() {
                 // Show original curve only when not animating
                 if (!isAnimating) {
                   return (
-                    // <HeatmapLine
-                    //   key={`curve-${i}`}
-                    //   points={points}
-                    //   lineWidth={0.5}
-                    // />
-                    <Line
+                    <HeatmapLine
                       key={`curve-${i}`}
                       points={points}
-                      lineWidth={0.5}
-                      />
+                      lineWidth={1}
+                    />
                   );
                 }else if (isAnimating && gcodeData) {
                   // Show animated curve when animating
@@ -497,7 +492,7 @@ function App() {
           makeDefault
         />
         
-        <axesHelper args={[500]} />
+        {/* <axesHelper args={[500]} /> */}
         <GizmoHelper margin={[50, 100]} alignment="bottom-left" scale={0.5}>
         <GizmoViewport
           axisColors={["hotpink", "aquamarine", "#3498DB"]}
