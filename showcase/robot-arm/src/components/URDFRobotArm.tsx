@@ -80,7 +80,7 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         solver.target = target;
 
         const ikHelper = new IKHelper(chain, {
-          linkWidth: 0.4,
+          linkWidth: 0.1,
           jointRadius: 0.6,
           jointHeight: 0.2,
           linkColor: 0x00ff00,
@@ -173,7 +173,7 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
       {robot && <primitive object={robot}/>}
 
       <mesh position={currentPosition}>
-        <sphereGeometry args={[10, 16, 16]} />
+        <sphereGeometry args={[5, 16, 16]} />
         <meshStandardMaterial 
           color="#ff0000" 
           emissive="#ff0000" 

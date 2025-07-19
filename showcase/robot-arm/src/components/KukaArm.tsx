@@ -1,8 +1,9 @@
 import { useRef } from 'react';
 import { Group } from 'three';
 import { useFrame } from '@react-three/fiber';
-import {  Line } from '@react-three/drei';
+import { HeatmapLine } from './HeatmapLine';
 import { useRobotAnimationStore } from '../stores/useRobotAnimationStore';
+import { Line } from '@react-three/drei';
 
 interface KukaArmProps {}
 
@@ -29,10 +30,13 @@ export function KukaArm({}: KukaArmProps) {
     <group ref={armRef}>
       {/* Progressive curve visualization */}
       {progressiveCurvePoints.length > 1 && (
+        // <HeatmapLine
+        //   points={progressiveCurvePoints}
+        //   lineWidth={2}
+        // />
         <Line
           points={progressiveCurvePoints}
-          color="#ff6b35"
-          lineWidth={2}
+          lineWidth={1}
         />
       )}
       

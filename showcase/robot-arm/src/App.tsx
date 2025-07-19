@@ -1,4 +1,4 @@
-import { OrbitControls, Stage, Line, GizmoHelper, GizmoViewport } from "@react-three/drei";
+import { OrbitControls, Stage, GizmoHelper, GizmoViewport, MeshTransmissionMaterial, Lightformer, Environment, useEnvironment, Line } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useControls, button } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
@@ -11,6 +11,20 @@ import { convertCurveToGcodeMoves } from "./utils/gcodeParser";
 import { useModularStore } from "./stores/useModularStore";
 import { useRobotAnimationStore } from "./stores/useRobotAnimationStore";
 import { URDFRobotArm } from "./components/URDFRobotArm";
+import { KukaArm } from "./components/KukaArm";
+import { HeatmapLine } from "./components/HeatmapLine";
+import * as THREE from 'three';
+
+
+function Env(){
+  const env = useEnvironment({ files: 'https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_04_1k.hdr' })
+  return(
+    <>
+    {/* <Environment map={env} background backgroundBlurriness={.8} backgroundRotation={[Math.PI/2,0,0]}/> */}
+    <color attach="background" args={["#252525"]} />
+    </>
+  )
+}
 
 function App() {
   // Zustand stores
@@ -50,6 +64,9 @@ function App() {
     setManualTarget(newTarget);
     setCurrentPosition(new Vector3(newTarget.x, newTarget.y, newTarget.z));
   }, [manualTarget, setCurrentPosition]);
+
+
+  
   
   // Local refs
   const debounceTimeoutRef = useRef<number | null>(null);
@@ -320,6 +337,9 @@ function App() {
 
   useControls(params, [params]);
 
+
+  
+
   // Robot arm animation controls
   const animationControlsProps = {
     isPlaying: isAnimating,
@@ -377,12 +397,14 @@ function App() {
         dpr={[1, 1.5]}
         camera={{ position: [10, 5, 15], fov: 45 }}
       >
-        <color attach="background" args={["#d0d0d0"]} />
+        {/* <color attach="background" args={["#d0d0d0"]} /> */}
         <ambientLight intensity={0.5} />
         <directionalLight
           position={[10, 10, 50]}
           intensity={1}
         />
+        <Env />
+        
         
         
         {/* <Sky distance={50000} sunPosition={[0, 1, 0]} inclination={0} azimuth={0.25} /> */}
@@ -391,8 +413,8 @@ function App() {
             intensity={0.5}
             preset="rembrandt"
             adjustCamera
-            // shadows="contact"
-            environment="city"
+            shadows={false}
+            environment="studio"
           >
             <group rotation={new Euler(-Math.PI * 0.5, 0, 0)}>
               {/* Note: This rotation rotates the entire scene by -90 degrees around X-axis */}
@@ -429,25 +451,46 @@ function App() {
                 // Show original curve only when not animating
                 if (!isAnimating) {
                   return (
+                    // <HeatmapLine
+                    //   key={`curve-${i}`}
+                    //   points={points}
+                    //   lineWidth={0.5}
+                    // />
                     <Line
                       key={`curve-${i}`}
                       points={points}
-                      color="#3c4c5c"
-                      lineWidth={1}
-                    />
+                      lineWidth={0.5}
+                      />
                   );
+                }else if (isAnimating && gcodeData) {
+                  // Show animated curve when animating
+                  return <KukaArm />;
                 }
                 
                 // Progressive curve is now handled in KukaArm component
                 return null;
               })}
               
-              {/* KUKA Robot Arm */}
+              
               
               <URDFRobotArm />
             </group>
+            {/* GlassMesh */}
+            <mesh rotation={[Math.PI / 2, 0, 0]} position={[0, -3, 0]}>
+              <boxGeometry args={[1000, 500, 5]}  />
+              <MeshTransmissionMaterial
+                thickness={0.5}
+                roughness={0.2}
+                transmission={1}
+                ior={0.1}
+                chromaticAberration={1.0}
+                backside={true}
+              />
+            </mesh>
           </Stage>
+          
         )}
+        
         <OrbitControls
           minPolarAngle={0}
           maxPolarAngle={Math.PI / 1.9}
