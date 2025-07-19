@@ -225,11 +225,11 @@ export function do_nothing_just_tell_wasm_bindgen_to_generate_types() {
 }
 
 function __wbg_adapter_52(arg0, arg1, arg2) {
-    wasm.closure862_externref_shim(arg0, arg1, arg2);
+    wasm.closure874_externref_shim(arg0, arg1, arg2);
 }
 
 function __wbg_adapter_129(arg0, arg1, arg2, arg3) {
-    wasm.closure3520_externref_shim(arg0, arg1, arg2, arg3);
+    wasm.closure3561_externref_shim(arg0, arg1, arg2, arg3);
 }
 
 const ModularFinalization = (typeof FinalizationRegistry === 'undefined')
@@ -643,8 +643,8 @@ function __wbg_get_imports() {
         const ret = false;
         return ret;
     };
-    imports.wbg.__wbindgen_closure_wrapper3617 = function(arg0, arg1, arg2) {
-        const ret = makeMutClosure(arg0, arg1, 863, __wbg_adapter_52);
+    imports.wbg.__wbindgen_closure_wrapper3844 = function(arg0, arg1, arg2) {
+        const ret = makeMutClosure(arg0, arg1, 875, __wbg_adapter_52);
         return ret;
     };
     imports.wbg.__wbindgen_debug_string = function(arg0, arg1) {

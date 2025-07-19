@@ -1,0 +1,5 @@
+Instantiated with filepath=None->None, scale=[0.6457433700561523, 0.6457433700561523, 0.6457433700561523], mesh=<bpy_struct, Mesh("Cylinder.003") at 0x395129e08>, meshname=Cylinder.003, material=None, mesh_orientation=None
+manually setting mesh_object by value of <class 'bpy_types.Mesh'>
+apply_scale [0.6457433700561523, 0.6457433700561523, 0.6457433700561523]
+->trying export of <bpy_struct, Mesh("Cylinder.004") at 0x12b205c08> to /Users/shintaro/Downloads/ik-sample/unnamed/meshes/stl/Cylinder.003.stl
+->wrote stl to /Users/shintaro/Downloads/ik-sample/unnamed/meshes/stl/Cylinder.003.stl from bpy_types.Mesh
