@@ -11,9 +11,9 @@ import { convertCurveToGcodeMoves } from "./utils/gcodeParser";
 import { useModularStore } from "./stores/useModularStore";
 import { useRobotAnimationStore } from "./stores/useRobotAnimationStore";
 import { URDFRobotArm } from "./components/URDFRobotArm";
-import { KukaArm } from "./components/KukaArm";
+import { Curve } from "./components/Curve";
 import { HeatmapLine } from "./components/HeatmapLine";
-import * as THREE from 'three';
+
 
 
 function Env(){
@@ -458,8 +458,7 @@ function App() {
                     />
                   );
                 }else if (isAnimating && gcodeData) {
-                  // Show animated curve when animating
-                  return <KukaArm />;
+                  return <Curve key={`animated-curve-${i}`} />;
                 }
                 
                 // Progressive curve is now handled in KukaArm component

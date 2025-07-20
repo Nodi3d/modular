@@ -31,7 +31,6 @@ function ccdIKSolver(ikChain, targetPosition, tolerance, maxNumOfIterations) {
         ikJoint.quaternion.setFromAxisAngle(ikJoint.axis, 0);
         ikJoint.updateMatrixWorld();
         if (Math.random() < 0.05) { // 5%の確率でログ出力
-          console.log(`Joint ${ikJoint.jointName || 'unknown'} (${ikJoint.name || 'no-name'}) is locked at 0 degrees - skipping IK`);
         }
         continue;
       }
@@ -100,7 +99,6 @@ function ccdIKSolver(ikChain, targetPosition, tolerance, maxNumOfIterations) {
           // 回転を完全にリセット
           const currentAngle = getIKJointRotationAngle(ikJoint);
           if (Math.abs(currentAngle) > 0.001) { // 現在の角度が0でない場合のみログ
-            console.log(`Joint ${ikJoint.jointName || 'unknown'} was at ${currentAngle.toFixed(3)} rad, resetting to 0 (fixed joint)`);
           }
           ikJoint.quaternion.setFromAxisAngle(ikJoint.axis, 0);
         } else {
@@ -109,8 +107,7 @@ function ccdIKSolver(ikChain, targetPosition, tolerance, maxNumOfIterations) {
             clampIKJointRotationAngle(ikJointRotationAngle, ikJoint.limit);
 
           if (isClamped) {
-            // 制限違反のログ出力（デバッグ用）
-            console.log(`Joint ${ikJoint.jointName || 'unknown'} clamped: ${ikJointRotationAngle.toFixed(3)} -> ${clampedIKJointRotationAngle.toFixed(3)} (limits: ${ikJoint.limit.lower.toFixed(3)} to ${ikJoint.limit.upper.toFixed(3)})`);
+            
             
             ikJoint.quaternion.setFromAxisAngle(
               ikJoint.axis,

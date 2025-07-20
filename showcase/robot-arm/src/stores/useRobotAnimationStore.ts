@@ -45,6 +45,7 @@ export const useRobotAnimationStore = create<RobotAnimationStore>((set, get) => 
   setCurrentPosition: (position) => set({ currentPosition: position.clone() }),
   
   startAnimation: () => {
+    console.log('Starting animation');
     const { gcodeData } = useModularStore.getState();
     if (gcodeData) {
       set({ isAnimating: true });
@@ -53,6 +54,7 @@ export const useRobotAnimationStore = create<RobotAnimationStore>((set, get) => 
   },
   
   pauseAnimation: () => {
+    console.log('Pausing animation');
     const state = get();
     state.stopAnimationFrame();
     set({ isAnimating: false });

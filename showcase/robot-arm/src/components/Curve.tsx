@@ -4,9 +4,9 @@ import { useFrame } from '@react-three/fiber';
 import { HeatmapLine } from './HeatmapLine';
 import { useRobotAnimationStore } from '../stores/useRobotAnimationStore';
 
-interface KukaArmProps {}
+interface CurveProps {}
 
-export function KukaArm({}: KukaArmProps) {
+export function Curve({}: CurveProps) {
   const { 
     isAnimating,
     currentPosition,
@@ -31,7 +31,7 @@ export function KukaArm({}: KukaArmProps) {
       {progressiveCurvePoints.length > 1 && (
         <HeatmapLine
           points={progressiveCurvePoints}
-          lineWidth={2}
+          lineWidth={1}
         />
       )}
       
@@ -42,7 +42,7 @@ export function KukaArm({}: KukaArmProps) {
 // TODO: Replace with actual KUKA GLTF model loader
 // import { useGLTF } from '@react-three/drei';
 // 
-// export function KukaArmGLTF({ targetPosition, isAnimating = false }: KukaArmProps) {
+// export function CurveGLTF({ targetPosition, isAnimating = false }: KukaArmProps) {
 //   const { scene } = useGLTF('/models/kuka-kr16.gltf');
 //   
 //   return (

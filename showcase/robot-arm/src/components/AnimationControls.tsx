@@ -27,7 +27,7 @@ export function AnimationControls({
   gcodeData
 }: AnimationControlsProps) {
   
-  useControls('Robot Animation', {
+  useControls('Robot Animation', () => ({
     // Playback controls
     'Play/Pause': button(() => {
       if (isPlaying) {
@@ -56,28 +56,9 @@ export function AnimationControls({
       onChange: onSpeedChange
     },
     
-    // Current position display (read-only)
-    'Current Move': {
-      value: `${currentMove + 1} / ${totalMoves}`,
-      disabled: true
-    },
     
-    // Current coordinates (if available)
-    ...(gcodeData && gcodeData[currentMove] && {
-      'X': {
-        value: gcodeData[currentMove].x.toFixed(2),
-        disabled: true
-      },
-      'Y': {
-        value: gcodeData[currentMove].y.toFixed(2),
-        disabled: true
-      },
-      'Z': {
-        value: gcodeData[currentMove].z.toFixed(2),
-        disabled: true
-      }
-    })
-  });
+    
+  }), [isPlaying]);
 
   return null; // Leva controls are rendered automatically
 }

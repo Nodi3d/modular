@@ -50,7 +50,7 @@ class IKJoint extends Group {
     const lower = Math.max(urdfLimit.lower, externalLimit.min.position);
     const upper = Math.min(urdfLimit.upper, externalLimit.max.position);
     
-    console.log(`Joint ${this.jointName || 'unknown'} limits merged: URDF(${urdfLimit.lower.toFixed(3)}, ${urdfLimit.upper.toFixed(3)}) + External(${externalLimit.min.position.toFixed(3)}, ${externalLimit.max.position.toFixed(3)}) = Final(${lower.toFixed(3)}, ${upper.toFixed(3)})`);
+    
     
     return { 
       lower, 
