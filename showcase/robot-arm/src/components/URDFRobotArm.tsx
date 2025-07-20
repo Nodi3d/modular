@@ -49,7 +49,7 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
             (robot: any) => {
               resolve(robot);
             },
-            (progress: any) => {},
+            () => {},
             (error: any) => {
               reject(error);
             }
@@ -115,7 +115,7 @@ export function URDFRobotArm({}: URDFRobotArmProps) {
         });
       }
       try {
-        const solveResult = ikSolver.solve();
+        ikSolver.solve();
         if (ikSolver.ikChain && ikSolver.ikChain.endEffector) {
           const endEffector = ikSolver.ikChain.endEffector;
           const worldPos = new Vector3();

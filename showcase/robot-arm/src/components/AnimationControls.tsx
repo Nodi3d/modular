@@ -23,8 +23,7 @@ export function AnimationControls({
   onPause,
   onReset,
   onSpeedChange,
-  onMoveChange,
-  gcodeData
+  onMoveChange
 }: AnimationControlsProps) {
   
   useControls('Robot Animation', () => ({

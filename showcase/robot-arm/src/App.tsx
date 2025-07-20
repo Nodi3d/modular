@@ -1,4 +1,4 @@
-import { OrbitControls, Stage, GizmoHelper, GizmoViewport, MeshTransmissionMaterial, Lightformer, Environment, useEnvironment } from "@react-three/drei";
+import { OrbitControls, Stage, GizmoHelper, GizmoViewport, MeshTransmissionMaterial } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useControls, button } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
@@ -16,15 +16,7 @@ import { HeatmapLine } from "./components/HeatmapLine";
 
 
 
-function Env(){
-  const env = useEnvironment({ files: 'https://dl.polyhaven.org/file/ph-assets/HDRIs/hdr/1k/studio_small_04_1k.hdr' })
-  return(
-    <>
-    {/* <Environment map={env} background backgroundBlurriness={.8} backgroundRotation={[Math.PI/2,0,0]}/> */}
-    <color attach="background" args={["#252525"]} />
-    </>
-  )
-}
+
 
 function App() {
   // Zustand stores
@@ -395,7 +387,7 @@ function App() {
         shadows
         gl={{ antialias: false }}
         dpr={[1, 1.5]}
-        camera={{ position: [10, 5, 15], fov: 45 }}
+        camera={{ position: [10, 10, 10], fov: 45 }}
       >
         {/* <color attach="background" args={["#d0d0d0"]} /> */}
         <ambientLight intensity={0.5} />
@@ -403,7 +395,7 @@ function App() {
           position={[10, 10, 50]}
           intensity={1}
         />
-        <Env />
+        <color attach="background" args={["#252525"]} />
         
         
         
