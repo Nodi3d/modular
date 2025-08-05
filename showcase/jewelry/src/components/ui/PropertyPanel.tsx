@@ -8,8 +8,8 @@ import { Schema } from "leva/dist/declarations/src/types";
 
 export const PropertyPanel: React.FC = () => {
   const {nodes, modular, evaluateGraph} = useModularStore();
-  const debounceTimeoutRef = useRef<number | null>(null);
-  const evaluateRef = useRef<(m: Modular) => void>();
+  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const evaluateRef = useRef<((modular: Modular) => void) | undefined>(undefined);
 
   // Keep evaluate function reference up to date
   evaluateRef.current = evaluateGraph;

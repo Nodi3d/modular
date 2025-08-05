@@ -31,35 +31,7 @@ export default function Model({ geometries }: ModelProps) {
           />
         </mesh>
       ))}
-      <group rotation={[0, -Math.PI / 2, 0]}>
-        <Dim3d
-          pointA={[0, tipHeight, 5]}
-          pointB={[0, -(length - tipHeight), 5]}
-          label={"length"}
-          active={propertyHover.length}
-          value={length}
-          offset={5}
-        />
-      </group>
-
-      <CircleDim3d
-        centerPosition={[0, tipHeight, 0]}
-        diameter={tipOuterSize}
-        active={propertyHover.tipOuterSize}
-        position="tr"
-      />
-      <CircleDim3d
-        centerPosition={[0, tipHeight, 0]}
-        diameter={tipInnerSize}
-        active={propertyHover.tipInnerSize}
-        position="tl"
-      />
-      <CircleDim3d
-        centerPosition={[0, 2.8, 0]}
-        diameter={outerSize}
-        active={propertyHover.outerSize}
-        position="bl"
-      />
+      
     </group>
   )
 }
