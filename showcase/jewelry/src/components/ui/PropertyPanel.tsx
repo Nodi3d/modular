@@ -1,49 +1,25 @@
-import React, { useMemo, useCallback, useRef, useEffect } from "react";
-import { useModularStore } from "@/stores/modular";
+import React, { useMemo, useCallback } from "react";
+import { useModularWorkerStore } from "@/stores/modularWorker";
 import { useControls } from "leva";
-import { Modular } from "nodi-modular";
 import { Schema } from "leva/dist/declarations/src/types";
 
 
 
 export const PropertyPanel: React.FC = () => {
-  const {nodes, modular, evaluateGraph} = useModularStore();
-  const debounceTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const evaluateRef = useRef<((modular: Modular) => void) | undefined>(undefined);
-
-  // Keep evaluate function reference up to date
-  evaluateRef.current = evaluateGraph;
+  const {nodes, updateNodeProperty} = useModularWorkerStore();
+  
+  console.log('PropertyPanel render, nodes:', nodes.length);
 
   const handleChange = useCallback(
     (id: string, value: number) => {
-      try {
-        // Immediately update the property for responsive UI
-        modular?.changeNodeProperty(id, {
-          name: "value",
-          value: {
-            type: "Number",
-            content: value,
-          },
-        });
-
-        // Clear existing timeout
-        if (debounceTimeoutRef.current) {
-          clearTimeout(debounceTimeoutRef.current);
-        }
-
-        // Debounce the evaluation to prevent excessive calls
-        debounceTimeoutRef.current = setTimeout(() => {
-          if (modular !== null && evaluateRef.current) {
-            evaluateRef.current(modular);
-          }
-        }, 0); // 150ms debounce delay
-
-      } catch (error) {
-        console.error("Error changing node property:", error);
-        console.log("Node ID:", id, "Value:", value);
+      // 現在の値と同じ場合は更新しない
+      const node = nodes.find(n => n.id === id);
+      const currentValue = node?.properties.find(p => p.name === "value")?.value.content;
+      if (currentValue !== value) {
+        updateNodeProperty(id, value);
       }
     },
-    [modular]
+    [nodes, updateNodeProperty]
   );
 
   const params = useMemo(() => {
@@ -109,19 +85,8 @@ export const PropertyPanel: React.FC = () => {
     };
   }, [nodes, handleChange]);
 
+  
   useControls(params, [params]);
 
-  // Cleanup debounce timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-      
-    };
-  }, []);
-
-  return (
-    <></>
-  );
+  return null;
 };

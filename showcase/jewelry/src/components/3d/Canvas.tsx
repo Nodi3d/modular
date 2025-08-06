@@ -1,12 +1,12 @@
 import { Canvas as ThreeCanvas } from "@react-three/fiber"
 import { OrbitControls, GizmoViewport, GizmoHelper, Environment, ContactShadows, Stage } from "@react-three/drei"
 
-import { useModularStore } from "@/stores/modular"
+import { useModularWorkerStore } from "@/stores/modularWorker"
 import Model from "./Model"
 
 const Canvas = () => {
   
-  const {  geometries } = useModularStore(
+  const {  geometries } = useModularWorkerStore(
     (state) => state
   )
   
@@ -74,7 +74,7 @@ const Canvas = () => {
             preset="rembrandt"
             adjustCamera={false}
             scale={1}
-            shadows={false}>
+            >
 
         <Model geometries={geometries} />
             </Stage>
