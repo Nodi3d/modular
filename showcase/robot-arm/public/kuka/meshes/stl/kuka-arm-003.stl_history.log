@@ -1,0 +1,5 @@
+Instantiated with filepath=None->None, scale=[0.016365516930818558, 0.016365516930818558, 0.01636551320552826], mesh=<bpy_struct, Mesh("kuka-arm-003") at 0x169e49e08>, meshname=kuka-arm-003, material=None, mesh_orientation=None
+manually setting mesh_object by value of <class 'bpy_types.Mesh'>
+apply_scale [0.016365516930818558, 0.016365516930818558, 0.01636551320552826]
+->trying export of <bpy_struct, Mesh("kuka-arm-003.002") at 0x169dd3008> to /Users/shintaro/Downloads/ik-sample/unnamed/meshes/stl/kuka-arm-003.stl
+->wrote stl to /Users/shintaro/Downloads/ik-sample/unnamed/meshes/stl/kuka-arm-003.stl from bpy_types.Mesh

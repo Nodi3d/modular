@@ -54,7 +54,7 @@ This application uses the following Nodi project:
 1. **WebAssembly Initialization**: The app initializes the nodi-modular WASM module using top-level await
 2. **Graph Loading**: Loads the predefined foldingbox node graph (foldingbox.json) containing packaging geometry logic
 3. **Interactive Controls**: Leva automatically generates GUI controls for node parameters (width, height, depth, etc.)
-4. **Real-time Updates**: Parameter changes trigger debounced graph re-evaluation to prevent UI freezing
+4. **Real-time Updates**: Parameter changes trigger graph re-evaluation
 5. **Geometry Processing**: Separates mesh geometries from curve geometries for optimized rendering
 6. **Surface Detection**: Identifies surface-derived meshes and applies specialized materials for consistent appearance
 7. **3D Visualization**: Renders geometries using Three.js with:
