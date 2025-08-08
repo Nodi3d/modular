@@ -22,11 +22,10 @@
 //   modular: Modular | null;
 //   nodes: NodeInterop[];
 //   geometries: GeometryWithId[];
-//   inputNodeId:string
+//   isLoading:boolean;
 //   manifoldGeometries:ManifoldGeometriesWithInfo[]
 //   nodeIds:{
-//     length:string,
-    
+//     innerDiameter: string;
 //   }
 
 //   // アクション
@@ -34,8 +33,8 @@
 //   setNodes: (nodes: NodeInterop[]) => void;
 //   setGeometries: (geometries: GeometryWithId[]) => void;
 
-//   setInputNodeId: (inputNodeId:string) => void
-//   setNodeIds: (nodeIds: { length: string; }) => void
+  
+//   setNodeIds: (nodeIds: { innerDiameter: string; }) => void
 //   setManifoldGeometries: (manifoldGeometries:ManifoldGeometriesWithInfo[]) => void
   
 //   // 複雑な操作
@@ -63,9 +62,9 @@
 //   modular: null,
 //   nodes: [],
 //   geometries: [],
-//   inputNodeId: "",
+//   isLoading: false,
 //   nodeIds:{
-//     length:"",
+//     innerDiameter:"",
     
 //   },
 //   manifoldGeometries:[],
@@ -74,7 +73,7 @@
 //   setModular: (modular) => set({ modular }),
 //   setNodes: (nodes) => set({ nodes }),
 //   setGeometries: (geometries) => set({ geometries }),
-//   setInputNodeId: (inputNodeId) => set({ inputNodeId }),
+  
 //   setNodeIds: (nodeIds) => set({ nodeIds }),
 
 //   initializeModular: async () => {
@@ -83,38 +82,37 @@
 //   },
 
 //   loadGraph: async (slug = 'braid') => {
-//     const { modular, setNodes, setInputNodeId, setNodeIds } = get();
+//     const { modular, setNodes,  setNodeIds } = get();
 //     if (!modular) return;
     
 //     try {
 //       // slugに基づいてグラフを動的に読み込む
 //       const imported = await importGraph(slug);
 //       const graphData = imported.default;
+//       set({ isLoading: true });
       
 //       modular.loadGraph(JSON.stringify(graphData.graph));
 //       const nodes = modular.getNodes();
 //       setNodes(nodes);
 //       console.log("nodes:", nodes);
       
-//       // "input" ラベルを持つノードを検索
-//       const inputNode = nodes.find(node => node.label === "input");
-//       if (inputNode) {
-//         setInputNodeId(inputNode.id);
-//       }
 //       // "holeSize" ラベルを持つノードを検索
-//       const lengthNode = nodes.find(node => node.label === "length");
-//       if (lengthNode) {
-//         setNodeIds({ length: lengthNode.id });
+//       const innerDiameterNode = nodes.find(node => node.label === "innerDiameter");
+//       if (innerDiameterNode) {
+//         setNodeIds({ innerDiameter: innerDiameterNode.id });
 //       }
       
 //       get().evaluateGraph();
 //     } catch (error) {
 //       console.error(`Error loading graph for ${slug}:`, error);
+//     } finally {
+//       set({ isLoading: false });
 //     }
 //   },
 
 //   evaluateGraph: async () => {
 //     const { modular, setGeometries, nodes } = get();
+//     set({ isLoading: true });
 //     if (!modular) return;
     
 //     try {
@@ -136,6 +134,8 @@
 //     } catch (error) {
 //       console.error("Error evaluating graph:", error);
 //       setGeometries([]);
+//     } finally {
+//       set({ isLoading: false });
 //     }
 //   },
 
