@@ -13,7 +13,7 @@ function App() {
   const [nodes, setNodes] = useState<NodeInterop[]>([]);
   const [meshGeometries, setMeshGeometries] = useState<BufferGeometry[]>([]);
   const [curveGeometries, setCurveGeometries] = useState<BufferGeometry[]>([]);
-  const debounceTimeoutRef = useRef<number | null>(null);
+  // const debounceTimeoutRef = useRef<number | null>(null);
   const evaluateRef = useRef<(m: Modular) => void>();
 
   const evaluate = useCallback(
@@ -104,17 +104,19 @@ function App() {
         });
 
         // Clear existing timeout
-        if (debounceTimeoutRef.current) {
-          clearTimeout(debounceTimeoutRef.current);
-        }
+        // if (debounceTimeoutRef.current) {
+        //   clearTimeout(debounceTimeoutRef.current);
+        // }
 
-        // Debounce the evaluation to prevent excessive calls
-        debounceTimeoutRef.current = setTimeout(() => {
+        // // Debounce the evaluation to prevent excessive calls
+        // debounceTimeoutRef.current = setTimeout(() => {
+        //   if (modular !== null && evaluateRef.current) {
+        //     evaluateRef.current(modular);
+        //   }
+        // }, 0); // 150ms debounce delay
           if (modular !== null && evaluateRef.current) {
             evaluateRef.current(modular);
           }
-        }, 0); // 150ms debounce delay
-
       } catch (error) {
         console.error("Error changing node property:", error);
         console.log("Node ID:", id, "Value:", value);
@@ -254,13 +256,13 @@ function App() {
   }, [modular, evaluate]);
 
   // Cleanup debounce timeout on unmount
-  useEffect(() => {
-    return () => {
-      if (debounceTimeoutRef.current) {
-        clearTimeout(debounceTimeoutRef.current);
-      }
-    };
-  }, []);
+  // useEffect(() => {
+  //   return () => {
+  //     if (debounceTimeoutRef.current) {
+  //       clearTimeout(debounceTimeoutRef.current);
+  //     }
+  //   };
+  // }, []);
 
   return (
     <div

@@ -1,12 +1,20 @@
-import React, { useMemo, useCallback } from "react";
+import React, { useMemo, useCallback, useEffect } from "react";
 import { useModularWorkerStore } from "@/stores/modularWorker";
 import { useControls } from "leva";
 import { Schema } from "leva/dist/declarations/src/types";
+import { useNavigate } from "react-router-dom";
+import { useRingStore } from "@/stores/ring";
+import sizes from "@/assets/jsons/size.json";
+import Icon from "./Icon";
+import { Tooltip } from "react-tooltip";
 
 
 
 export const PropertyPanel: React.FC = () => {
-  const {nodes, updateNodeProperty} = useModularWorkerStore();
+  const {nodes, updateNodeProperty, nodeIds} = useModularWorkerStore();
+  const navigate = useNavigate();
+  const {sizeLabel, size} = useRingStore()
+  const types = ["braid","bypass", "twist"]
   
   console.log('PropertyPanel render, nodes:', nodes.length);
 
@@ -19,7 +27,7 @@ export const PropertyPanel: React.FC = () => {
         updateNodeProperty(id, value);
       }
     },
-    [nodes, updateNodeProperty]
+    [nodes,updateNodeProperty]
   );
 
   const params = useMemo(() => {
@@ -88,5 +96,59 @@ export const PropertyPanel: React.FC = () => {
   
   useControls(params, [params]);
 
-  return null;
+  useEffect(()=>{
+    console.log("params",params)
+  },[params])
+  
+
+  const handleChangeGraph = useCallback((graph: string) => {
+    navigate(`/${graph}`)
+  }, [navigate]);
+
+  
+
+  return (
+    <div className="absolute bottom-8 inset-x-0 mx-auto z-10 flex gap-2 justify-center">
+      <div className="t-dropdown">
+
+      <p>{sizeLabel}</p>
+      <ul className="t-dropdown-contents origin-bottom-left bottom-[calc(-100%-32px)] border-1">
+        {sizes.sizes.map((size) => (
+          <li key={size.value} className="cursor-pointer" onClick={() => handleChange(nodeIds.innerDiameter,size.value)}>
+            
+            <span className="text-xs text-content-dark-m-b-a mr-1">{size.jp}</span>
+            <span className="text-sm text-content-dark-m-b-a">{size.us}</span>
+            <span className="text-sm text-content-dark-m-b-a">{size.eu}</span>
+          </li>
+        ))}
+      </ul>
+      </div>
+      <ul className="bg-content-dark-l-a rounded-full w-fit flex gap-2">
+        {types.map((type)=>(
+          <li className="cursor-pointer text-center p-4" onClick={() => handleChangeGraph(type)}
+            data-tooltip-content={type}
+            data-tooltip-id="hint-tooltip"
+          >
+            <Icon name={type} className="size-10"/>
+            
+          </li>
+        ))}
+      </ul>
+      
+      <Tooltip
+          id="hint-tooltip"
+          place="bottom"
+          className="text-xs"
+          style={{
+            backgroundColor: "#1C1C1C",
+            color: "#ffffff",
+            fontSize: "12px",
+            padding: "2px 4px 2px 4px",
+            borderRadius: "4px",
+            userSelect: "none",
+          }}
+          noArrow
+        />
+    </div>
+  )
 };

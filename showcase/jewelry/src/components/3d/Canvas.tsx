@@ -74,6 +74,7 @@ const Canvas = () => {
             preset="rembrandt"
             adjustCamera={false}
             scale={1}
+            
             >
 
         <Model geometries={geometries} />

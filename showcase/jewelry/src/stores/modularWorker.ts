@@ -1,9 +1,22 @@
 import { create } from 'zustand';
-import type { NodeInterop, NodePropertyInterop } from 'nodi-modular';
+import type { GeometryIdentifier, NodeInterop, NodePropertyInterop } from 'nodi-modular';
 import { convertGeometryInterop } from '@/utils/geometryUtils';
 import { getModularWorkerClient } from '@/workers/ModularWorkerClient';
-import type { GeometryWithId, ManifoldGeometriesWithInfo } from './modular';
+import { BufferGeometry } from 'three';
 import braid from '@/assets/graph/braid.json';
+
+
+// // ジオメトリ情報の型を定義
+export interface GeometryWithId {
+  id: GeometryIdentifier;  // stringではなくGeometryIdentifier型に修正
+  geometry: BufferGeometry;
+  label: string;
+}
+export interface ManifoldGeometriesWithInfo {
+  label: string
+  id: string
+  geometry: BufferGeometry
+}
 
 // Zustandストアの型定義
 interface ModularWorkerState {
@@ -15,8 +28,7 @@ interface ModularWorkerState {
   manifoldGeometries: ManifoldGeometriesWithInfo[];
 
   nodeIds: {
-    length: string;
-    
+    innerDiameter: string;
   };
 
   // アクション
@@ -54,8 +66,7 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
   inputNodeId: '',
   manifoldGeometries: [],
   nodeIds: {
-    length: '',
-    
+    innerDiameter: '',
   },
 
   setNodes: (nodes) => set({ nodes }),
@@ -84,8 +95,9 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
     set({ isConnected: false, nodes: [], geometries: [] });
   },
 
-  loadGraph: async (slug = 'braid') => {
+  loadGraph: async (slug) => {
     const { isConnected, setNodes, setInputNodeId, setNodeIds } = get();
+    console.log('Loading graph:', slug);
     if (!isConnected) {
       console.warn('Worker not connected');
       return;
@@ -96,7 +108,7 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
       set({ isLoading: true });
 
       // slugに基づいてグラフを動的に読み込む
-      const imported = await importGraph(slug);
+      const imported = await importGraph(slug? slug : 'braid');
       const graphData = imported.default;
 
       const nodes = await client.loadGraph(JSON.stringify(graphData.graph));
@@ -110,13 +122,14 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
       }
 
       // 各ラベルを持つノードを検索
-      const lengthNode = nodes.find((node) => node.label === 'length');
+      const innerDiameterNode = nodes.find((node) => node.label === 'innerDiameter');
       
 
-      if (lengthNode) {
+      if (innerDiameterNode) {
         setNodeIds({
-          length: lengthNode.id
+          innerDiameter: innerDiameterNode.id
         });
+        console.log('innerDiameterNode is Set:', innerDiameterNode);
       }
 
       // 初期評価を実行
@@ -150,6 +163,7 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
         .filter((g): g is GeometryWithId => g !== null);
 
       setGeometries(gs);
+      console.log('geometries:', gs);
     } catch (error) {
       console.error('Error evaluating graph:', error);
       setGeometries([]);
@@ -198,16 +212,16 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
 
       // SharedWorkerが自動的に評価を実行してジオメトリとノードを返す
       const response = await client.updateNodeProperty(id, property);
-      const { geometries, nodes: updatedNodes } = response;
+      const { geometries } = response;
 
       // 更新されたノード情報を保存
-      setNodes(updatedNodes);
+      // setNodes(updatedNodes);
 
       const gs = geometries
         .map((g) => {
           const { id, interop, transform } = g;
           const geometry = interop ? convertGeometryInterop(interop, transform) : null;
-          const node = updatedNodes.find((n) => n.id === id.graphNodeSet?.nodeId);
+          const node = nodes.find((n) => n.id === id.graphNodeSet?.nodeId);
           const label = node?.label || '';
           return geometry ? { id, geometry, label } : null;
         })

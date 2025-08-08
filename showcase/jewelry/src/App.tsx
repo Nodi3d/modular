@@ -3,12 +3,17 @@ import { useModularWorkerStore } from "@/stores/modularWorker"
 import Canvas from "@/components/3d/Canvas"
 import { PropertyPanel } from "@/components/ui/PropertyPanel"
 import { Loader } from "./components/ui/Loader"
+import { useParams, BrowserRouter,
+  Routes,
+  Route,
+  } from "react-router-dom"
 
 // ModularInitializer component - handles modular initialization
 const ModularInitializer = memo(() => {
   const connect = useModularWorkerStore((state) => state.connect)
   const loadGraph = useModularWorkerStore((state) => state.loadGraph)
   const isConnected = useModularWorkerStore((state) => state.isConnected)
+  const { slug } = useParams<{ slug: string }>()
   
   
 
@@ -19,9 +24,9 @@ const ModularInitializer = memo(() => {
 
   useEffect(() => {
     if (isConnected) {
-      loadGraph("braid")
+      loadGraph(slug as string)
     }
-  }, [isConnected, loadGraph])
+  }, [isConnected, loadGraph, slug])
 
   return null
 })
@@ -30,14 +35,23 @@ const ModularInitializer = memo(() => {
 
 function App() {
   const { isLoading } = useModularWorkerStore((state) => state)
+  
   return (
     <div className="flex flex-col h-screen w-screen">
-      <ModularInitializer />
-      {isLoading && <Loader />}
-      
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={(
+            <><ModularInitializer /></>)} />
+          <Route path="/:slug" element={(
+            <><ModularInitializer /></>
+          )} />
+        </Routes>
+        <Canvas/>
+        <PropertyPanel />
+        {isLoading && <Loader />}
+      </BrowserRouter>
 
-      <PropertyPanel />
-      <Canvas />
+      
     </div>
   )
 }

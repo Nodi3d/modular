@@ -6,7 +6,7 @@ const iconCache: Record<string, React.ComponentType<any>> = {}
 // アイコンを取得する関数（キャッシュがあれば再利用）
 const loadIcon = (name: string) => {
   if (!iconCache[name]) {
-    iconCache[name] = lazy(() => import(`../../../assets/icons/${name}.svg`))
+    iconCache[name] = lazy(() => import(`../../assets/icons/${name}.svg`))
   }
   return iconCache[name]
 }
