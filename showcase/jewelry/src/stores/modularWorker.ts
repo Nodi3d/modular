@@ -18,6 +18,8 @@ export interface ManifoldGeometriesWithInfo {
   geometry: BufferGeometry
 }
 
+export type RingType = "braid" | "bypass" | "twist";
+
 // Zustandストアの型定義
 interface ModularWorkerState {
   nodes: NodeInterop[];
@@ -30,6 +32,7 @@ interface ModularWorkerState {
   nodeIds: {
     innerDiameter: string;
   };
+  currentType: RingType;
 
   // アクション
   setNodes: (nodes: NodeInterop[]) => void;
@@ -37,7 +40,7 @@ interface ModularWorkerState {
   setNodeIds: (nodeIds: ModularWorkerState['nodeIds']) => void;
   setInputNodeId: (inputNodeId: string) => void;
   setManifoldGeometries: (manifoldGeometries: ManifoldGeometriesWithInfo[]) => void;
-
+  setCurrentType: (currentType:RingType) => void;
   // 複雑な操作
   connect: () => Promise<void>;
   disconnect: () => void;
@@ -68,13 +71,14 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
   nodeIds: {
     innerDiameter: '',
   },
+  currentType: 'braid',
 
   setNodes: (nodes) => set({ nodes }),
   setGeometries: (geometries) => set({ geometries }),
   setNodeIds: (nodeIds) => set({ nodeIds }),
   setInputNodeId: (inputNodeId) => set({ inputNodeId }),
   setManifoldGeometries: (manifoldGeometries) => set({ manifoldGeometries }),
-
+  setCurrentType: (currentType:RingType) => set({ currentType }),
   connect: async () => {
     const client = getModularWorkerClient();
     try {

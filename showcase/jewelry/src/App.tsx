@@ -1,5 +1,5 @@
 import { useEffect, memo } from "react"
-import { useModularWorkerStore } from "@/stores/modularWorker"
+import { RingType, useModularWorkerStore } from "@/stores/modularWorker"
 import Canvas from "@/components/3d/Canvas"
 import { PropertyPanel } from "@/components/ui/PropertyPanel"
 import { Loader } from "./components/ui/Loader"
@@ -13,6 +13,7 @@ const ModularInitializer = memo(() => {
   const connect = useModularWorkerStore((state) => state.connect)
   const loadGraph = useModularWorkerStore((state) => state.loadGraph)
   const isConnected = useModularWorkerStore((state) => state.isConnected)
+  const {setCurrentType} = useModularWorkerStore()
   const { slug } = useParams<{ slug: string }>()
   
   
@@ -26,6 +27,7 @@ const ModularInitializer = memo(() => {
     if (isConnected) {
       loadGraph(slug as string)
     }
+    setCurrentType(slug as RingType)
   }, [isConnected, loadGraph, slug])
 
   return null
