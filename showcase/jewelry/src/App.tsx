@@ -2,7 +2,7 @@ import Canvas from '@/components/3d/Canvas'
 import { PropertyPanel } from '@/components/ui/PropertyPanel'
 import { RingType, useModularWorkerStore } from '@/stores/modularWorker'
 import { memo, useEffect } from 'react'
-import { BrowserRouter, Route, Routes, useParams } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { Download } from './components/ui/Download'
 import { Loader } from './components/ui/Loader'
 
@@ -38,11 +38,7 @@ function App() {
         <Routes>
           <Route
             path="/"
-            element={
-              <>
-                <ModularInitializer />
-              </>
-            }
+            element={<Navigate to="/braid" replace />}
           />
           <Route
             path="/:slug"

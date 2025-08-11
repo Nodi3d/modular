@@ -23,8 +23,8 @@ export type BypassParameters = {
 
 export type TwistParameters = {
   innerDiameter: number
-  ticknessBottom: number
-  ticknessTop: number
+  thicknessBottom: number
+  thicknessTop: number
   twist: number
   polygon: number
 }
@@ -76,8 +76,8 @@ export const useRingStore = create<RingStore>(set => ({
   },
   twistParameters: {
     innerDiameter: 8,
-    ticknessBottom: 1.69,
-    ticknessTop: 2.58,
+    thicknessBottom: 1.69,
+    thicknessTop: 2.58,
     twist: 1,
     polygon: 9,
   },
