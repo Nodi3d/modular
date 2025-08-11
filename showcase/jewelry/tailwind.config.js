@@ -1,15 +1,27 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+  content: ['./index.html', './src/**/*.{js,ts,jsx,tsx}'],
   theme: {
     extend: {
       fontFamily: {
         sans: ['Inter', 'system-ui', 'Avenir', 'Helvetica', 'Arial', 'sans-serif'],
-        display: ['F5.6', 'Menlo', 'Monaco', 'Consolas', 'Liberation Mono', 'Courier New', 'monospace'],
-        serif: ['Marcellus', 'Yu Gothic', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Inter', 'serif'],
+        display: [
+          'F5.6',
+          'Menlo',
+          'Monaco',
+          'Consolas',
+          'Liberation Mono',
+          'Courier New',
+          'monospace',
+        ],
+        serif: [
+          'Erode',
+          'Yu Gothic',
+          'Hiragino Sans',
+          'Hiragino Kaku Gothic ProN',
+          'Inter',
+          'serif',
+        ],
       },
       colors: {
         primary: '#111111',
@@ -52,4 +64,3 @@ export default {
   },
   plugins: [],
 }
-

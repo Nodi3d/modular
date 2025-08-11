@@ -3,6 +3,10 @@
 @tailwind utilities;
 
 @font-face {
+  font-family: 'Erode';
+  src: url('./assets/fonts/Erode-Variable.ttf') format('truetype');
+}
+@font-face {
   font-family: 'F5.6';
   src: url('./assets/fonts/F5.6-Regular.woff') format('woff');
 }
@@ -52,8 +56,7 @@
 
     --font-sans: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
     --font-display: 'F5.6', Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
-    --font-serif: 'Marcellus', 'Yu Gothic', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Inter',
-      serif;
+    --font-serif: 'Erode', 'Yu Gothic', 'Hiragino Sans', 'Hiragino Kaku Gothic ProN', 'Inter', serif;
 
     --text-overline: 0.625rem;
     --text-xs: 0.75rem;

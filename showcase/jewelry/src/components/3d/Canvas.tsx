@@ -1,22 +1,8 @@
-import { Environment, GizmoHelper, GizmoViewport, OrbitControls, Stage } from '@react-three/drei'
-import { Canvas as ThreeCanvas, useThree } from '@react-three/fiber'
+import { Environment, OrbitControls, Stage } from '@react-three/drei'
+import { Canvas as ThreeCanvas } from '@react-three/fiber'
 
 import { useModularWorkerStore } from '@/stores/modularWorker'
-import { useRingStore } from '@/stores/ring'
-import { useEffect } from 'react'
 import Model from './Model'
-
-// 材質変更時に再レンダリングを強制するコンポーネント
-const InvalidateOnMaterialChange = () => {
-  const { material } = useRingStore()
-  const { invalidate } = useThree()
-
-  useEffect(() => {
-    invalidate()
-  }, [material, invalidate])
-
-  return null
-}
 
 const Canvas = () => {
   const { geometries } = useModularWorkerStore(state => state)
@@ -46,9 +32,9 @@ const Canvas = () => {
         <Environment preset="warehouse" background={false} blur={0.6} />
         <color attach="background" args={['#d9d9d9']} />
 
-        <GizmoHelper alignment="bottom-left" scale={0.5}>
+        {/* <GizmoHelper alignment="bottom-left" scale={0.5}>
           <GizmoViewport axisColors={['hotpink', 'aquamarine', '#3498DB']} labelColor="black" />
-        </GizmoHelper>
+        </GizmoHelper> */}
 
         <OrbitControls
           enableRotate={true}
@@ -61,7 +47,7 @@ const Canvas = () => {
           maxAzimuthAngle={Math.PI}
           maxDistance={900} // カメラの最大ズームアウト距離を200に制限
         />
-        <InvalidateOnMaterialChange />
+
         <Stage intensity={0} preset="rembrandt" adjustCamera={false} scale={1}>
           <Model geometries={geometries} />
         </Stage>

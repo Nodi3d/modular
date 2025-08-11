@@ -66,7 +66,7 @@ export const Download = () => {
       disabled={disabled}
       onClick={handleDownload}
       onHoverStart={spinOnce} // ← ホバー時に1周だけ回す
-      className="t-button z-10 w-36 h-10 right-8 top-8 absolute p-2"
+      className="t-button z-10 w-36 h-10 right-8 top-8 absolute p-2 shadow-md hover:shadow-lg"
       style={{
         // position: 'relative',
 
