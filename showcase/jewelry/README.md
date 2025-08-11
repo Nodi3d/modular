@@ -30,9 +30,9 @@ npm run dev
 
 ## Ring Types
 
-- **Braid**: Interwoven band design with customizable thickness and pattern
-- **Bypass**: Overlapping band style with adjustable gap and curve
-- **Twist**: Spiraling band with configurable twist count and tension
+- **Braid**: Interwoven band design with customizable thickness and pattern ([Nodi project](https://app.nodi3d.com/4d5b3099-f023-44e4-80a8-c68171c1b8f5))
+- **Bypass**: Overlapping band style with adjustable gap and curve([Nodi project](https://app.nodi3d.com/c99a349a-b045-4078-b1fa-f545e2c8e638))
+- **Twist**: Spiraling band with configurable twist count and tension([Nodi project](https://app.nodi3d.com/3f3fd82e-812b-4c85-97a8-8cbf96239a7c))
 
 ## Available Scripts
 
