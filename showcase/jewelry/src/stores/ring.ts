@@ -1,4 +1,5 @@
 import { create } from 'zustand'
+import sizesData from '../assets/jsons/size.json'
 
 export type Material = 'gold' | 'silver' | 'platinum'
 
@@ -28,10 +29,15 @@ export type TwistParameters = {
   polygon: number
 }
 
+export type Size = {
+  value: number
+  locale: string
+  label: string
+}
+
 interface RingStore {
   material: Material
-  sizeLabel: string
-  size: number
+  size: Size
   braidParameters: BraidParameters
   bypassParameters: BypassParameters
   twistParameters: TwistParameters
@@ -39,14 +45,19 @@ interface RingStore {
   setBraidParameters: (params: BraidParameters) => void
   setBypassParameters: (params: BypassParameters) => void
   setTwistParameters: (params: TwistParameters) => void
+  setSize: (value: number, locale: string) => void
 }
 
 // Zustand ストアを作成
 export const useRingStore = create<RingStore>(set => ({
   //   // 初期状態
   material: 'gold',
-  sizeLabel: '6号',
-  size: 14.7,
+
+  size: {
+    value: 15.6,
+    locale: 'jp',
+    label: '9号',
+  },
   braidParameters: {
     innerDiameter: 8,
     waveCount: 4,
@@ -74,4 +85,14 @@ export const useRingStore = create<RingStore>(set => ({
   setBraidParameters: params => set({ braidParameters: params }),
   setBypassParameters: params => set({ bypassParameters: params }),
   setTwistParameters: params => set({ twistParameters: params }),
+  setSize: (value: number, locale: string) => {
+    console.log('setSize called')
+    set({
+      size: {
+        value,
+        locale,
+        label: sizesData.sizes.find(s => s.value === value)?.[locale as 'jp' | 'us' | 'eu'] || '',
+      },
+    })
+  },
 }))

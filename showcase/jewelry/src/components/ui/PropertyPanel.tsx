@@ -13,7 +13,7 @@ export const PropertyPanel: React.FC = () => {
 
   const {
     material,
-    sizeLabel,
+    size,
     braidParameters,
     bypassParameters,
     twistParameters,
@@ -21,6 +21,7 @@ export const PropertyPanel: React.FC = () => {
     setBypassParameters,
     setTwistParameters,
     setMaterial,
+    setSize,
   } = useRingStore()
   const types = ['braid', 'bypass', 'twist']
   const materials = [
@@ -282,8 +283,16 @@ export const PropertyPanel: React.FC = () => {
     [navigate]
   )
 
+  const handleSizeUpdate = useCallback(
+    (value: number, locale: string) => {
+      handleChange(nodeIds.innerDiameter, value)
+      setSize(value, locale)
+    },
+    [handleChange, setSize]
+  )
+
   return (
-    <div className="absolute bottom-8 inset-x-0 z-10" ref={panelRef}>
+    <div className="absolute bottom-8 inset-x-0 z-10 font-serif" ref={panelRef}>
       <motion.div
         layout
         className={`relative gap-0 justify-center  rounded-full w-fit mx-auto items-center h-16 ${
@@ -321,13 +330,15 @@ export const PropertyPanel: React.FC = () => {
                   bounce: 0.2,
                 }}></motion.div>
             </motion.div>
-            <div
-              className={`cursor-pointer text-center p-2 ${
+            <p
+              className={`cursor-pointer text-center p-2 flex flex-col items-center justify-center${
                 currentMenu == 0 ? 'text-content-h-a' : 'text-content-l-a hover:text-content-h-a'
               } transition-all`}
               onClick={() => setCurrentMenu(0)}>
-              <p>{sizeLabel}</p>
-            </div>
+              <span className="text-xs">{size.locale.toUpperCase() + ' size'}</span>
+
+              <span className="text-lg">{size.label}</span>
+            </p>
             <div
               className={`cursor-pointer p-2 relative flex gap-2 justify-center items-center ${
                 currentMenu == 1 ? 'text-content-h-a' : 'text-content-l-a hover:text-content-h-a'
@@ -374,11 +385,22 @@ export const PropertyPanel: React.FC = () => {
                   {sizes.sizes.map(size => (
                     <li
                       key={size.value}
-                      className={`cursor-pointer grid [grid-template-columns:repeat(3,64px)] text-center text-content-h-a hover:bg-content-xxl-a rounded-lg p-2`}
-                      onClick={() => handleChange(nodeIds.innerDiameter, size.value)}>
-                      <span className=" mr-1">{size.jp}</span>
-                      <span className="">{size.us}</span>
-                      <span className="">{size.eu}</span>
+                      className={`cursor-pointer grid [grid-template-columns:repeat(3,64px)] text-center hover:bg-content-xxl-a rounded-lg p-2`}>
+                      <span
+                        onClick={() => handleSizeUpdate(size.value, 'jp')}
+                        className="text-content-l-a hover:text-content-h-a">
+                        {size.jp}
+                      </span>
+                      <span
+                        onClick={() => handleSizeUpdate(size.value, 'us')}
+                        className="text-content-l-a hover:text-content-h-a">
+                        {size.us}
+                      </span>
+                      <span
+                        onClick={() => handleSizeUpdate(size.value, 'eu')}
+                        className="text-content-l-a hover:text-content-h-a">
+                        {size.eu}
+                      </span>
                     </li>
                   ))}
                 </>
