@@ -292,7 +292,7 @@ export const PropertyPanel: React.FC = () => {
   )
 
   return (
-    <div className="absolute bottom-8 inset-x-0 z-10 font-serif" ref={panelRef}>
+    <div className="absolute bottom-24 inset-x-0 z-10 font-serif" ref={panelRef}>
       <motion.div
         layout
         className={`relative gap-0 justify-center  rounded-full w-fit mx-auto items-center h-16 ${
