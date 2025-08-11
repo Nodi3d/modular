@@ -4,7 +4,7 @@ A parametric jewelry design configurator built with the nodi-modular library, fe
 
 ## Features
 
-![demo](/demo.mp4)
+![demo](/demo.gif)
 
 - **Parametric Ring Design**: Interactive customization of various ring styles including braid, bypass, and twist patterns
 - **Real-time 3D Visualization**: Instant preview of design changes with material selection (gold, silver, platinum)
