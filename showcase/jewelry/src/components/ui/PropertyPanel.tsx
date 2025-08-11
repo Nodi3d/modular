@@ -286,10 +286,10 @@ export const PropertyPanel: React.FC = () => {
     <div className="absolute bottom-8 inset-x-0 z-10" ref={panelRef}>
       <motion.div
         layout
-        className={`relative gap-0 justify-center bg-surface-sheet-l rounded-full w-fit mx-auto items-center h-16 ${
+        className={`relative gap-0 justify-center  rounded-full w-fit mx-auto items-center h-16 ${
           menuOpen
-            ? 'grid grid-rows-1 [grid-template-columns:repeat(3,120px)]'
-            : 'flex cursor-pointer'
+            ? 'grid grid-rows-1 [grid-template-columns:repeat(3,120px)] bg-surface-sheet-l'
+            : 'flex cursor-pointer scale-100 bg-surface-sheet-h'
         }`}
         animate={{
           width: menuOpen ? 360 : 50,

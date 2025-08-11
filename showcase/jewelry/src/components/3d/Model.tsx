@@ -7,6 +7,7 @@ type ModelProps = {
 
 export default function Model({ geometries }: ModelProps) {
   const { material } = useRingStore()
+  const previewGeometries = geometries.filter(g => g.label !== 'mesh')
 
   const getMaterialColor = (mat: string) => {
     if (mat === 'gold') return '#e5ba4d'
@@ -17,7 +18,7 @@ export default function Model({ geometries }: ModelProps) {
 
   return (
     <group rotation={[0, 0, 0]}>
-      {geometries.map((geometry, index) => (
+      {previewGeometries.map((geometry, index) => (
         <mesh
           key={`${index}-${material}`}
           geometry={geometry.geometry}
