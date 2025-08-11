@@ -1,30 +1,38 @@
-# Nodi Modular Sample - Nozzle Configurator
+# Nodi Modular Sample - Jewelry Configurator
 
-A 3D printer nozzle configurator built with the nodi-modular library, featuring interactive 3D visualization and parametric design capabilities for custom nozzle manufacturing.
-
+A parametric jewelry design configurator built with the nodi-modular library, featuring real-time 3D visualization and customizable ring designs for personalized jewelry creation.
 
 ## Features
-![gif](/nozzle.gif)
 
-- **Parametric Design**: Adjust nozzle dimensions including length, outer size, tip sizes, and needle length in real-time
+![demo](/demo.mp4)
 
+- **Parametric Ring Design**: Interactive customization of various ring styles including braid, bypass, and twist patterns
+- **Real-time 3D Visualization**: Instant preview of design changes with material selection (gold, silver, platinum)
+- **Multiple Ring Types**: Choose from different parametric ring designs with unique characteristics
+- **Material Options**: Select between different precious metals with realistic rendering
+- **Export Capability**: Download your custom designs for 3D printing or manufacturing
 
 ## Getting Started
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Start the development server:
+
 ```bash
 npm run dev
 ```
 
 3. Open your browser and navigate to `http://localhost:5173`
 
-* Modeling part is done with following projects.
-(https://app.nodi3d.com/d7a4f0c8-4cf6-4b2c-bf17-f2756057f2a6)[https://app.nodi3d.com/d7a4f0c8-4cf6-4b2c-bf17-f2756057f2a6]
+## Ring Types
+
+- **Braid**: Interwoven band design with customizable thickness and pattern
+- **Bypass**: Overlapping band style with adjustable gap and curve
+- **Twist**: Spiraling band with configurable twist count and tension
 
 ## Available Scripts
 
@@ -38,7 +46,7 @@ npm run dev
 - **Frontend**: React 19 + TypeScript
 - **3D Rendering**: Three.js with @react-three/fiber and @react-three/drei
 - **Build Tool**: Vite with WASM and top-level await plugins
-- **UI Controls**: Custom sliders for precise parameter adjustment
+- **UI Controls**: Custom property panel for precise parameter adjustment
 - **WebAssembly**: nodi-modular (v0.0.20) for computational geometry
 - **State Management**: Zustand for application state
-
+- **Routing**: React Router for different ring type navigation
