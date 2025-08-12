@@ -208,7 +208,7 @@ export const PropertyPanel: React.FC = () => {
       handleChange(nodeIds.innerDiameter, value)
       setSize(value, locale)
     },
-    [handleChange, setSize]
+    [handleChange, nodeIds.innerDiameter, setSize]
   )
 
   return (
