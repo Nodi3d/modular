@@ -408,16 +408,13 @@ export const PropertyPanel: React.FC = () => {
               <p>{materials.find((m) => m.label === material)?.label}</p>
             </div>
             <motion.ul
-              // className={`absolute bottom-20 bg-surface-sheet-l rounded-3xl p-4 backdrop-blur-md ${
-              //   currentMenu === 1 ? 'w-96' : 'w-[240px]'
-              // }`}
-              // animate={{
-              //   x: currentMenu * 120 - ((currentMenu === 1 ? 384 / 2 : 120) - 60),
-              // }}
               className={`absolute bottom-20 bg-surface-sheet-h rounded-3xl p-4 backdrop-blur-md ${
-                currentMenu === 1 ? "w-96" : "min-w-[160px]"
+                currentMenu === 1 ? "w-80" : "min-w-[160px]"
               }`}
-              animate={{ x: "-50%", left: currentMenu * 120 + 60 }}
+              animate={{ 
+                x: `-${currentMenu * 50}%`,
+                left: `${currentMenu * 180}px`
+              }}
               transition={{
                 type: "spring",
                 visualDuration: 0.2,
