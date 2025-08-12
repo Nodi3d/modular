@@ -20,6 +20,7 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
 }) => {
   const sliderRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
+  const [directValue, setDirectValue] = useState(value)
   const [debouncedValue, setDebouncedValue] = useDebounce(value, 15)
 
   useEffect(() => {
@@ -51,16 +52,20 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
     const v = Math.max(min, Math.min(max, steppedValue))
     // truncate to 2 decimal places
     const truncatedValue = Math.round(v * 100) / 100
-    setDebouncedValue(truncatedValue)
-  }, [isDragging, min, max, step, setDebouncedValue])
+    setDirectValue(truncatedValue)
+  }, [isDragging, min, max, step])
 
   const handleTouchEnd = useCallback(() => {
     setIsDragging(false)
   }, [])
 
   const handleChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
-    setDebouncedValue(Number(e.target.value))
-  }, [setDebouncedValue])
+    setDirectValue(Number(e.target.value))
+  }, [])
+
+  useEffect(() => {
+    setDebouncedValue(directValue)
+  }, [directValue, setDebouncedValue])
 
   useEffect(() => {
     if (debouncedValue !== value) {
@@ -75,7 +80,7 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
       min={min}
       max={max}
       step={step}
-      value={value}
+      value={directValue}
       onChange={handleChange}
       onTouchStart={handleTouchStart}
       onTouchMove={handleTouchMove}
