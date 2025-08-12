@@ -108,7 +108,7 @@ export const PropertyPanel: React.FC = () => {
         if (label === 'twist') return twistParameters.twist
         if (label === 'polygon') return twistParameters.polygon
       }
-      return 0
+      return undefined;
     },
     [currentType, braidParameters, bypassParameters, twistParameters]
   )
@@ -167,7 +167,7 @@ export const PropertyPanel: React.FC = () => {
 
           if (range?.value.type === 'Vector2d' && step?.value.type === 'Number') {
             const v = getParameterValue(node.label)
-            return (
+            return v !== undefined ? (
               <div
                 className="grid grid-cols-[minmax(0,_1fr)_minmax(62px,_1fr)_minmax(36px,_auto)] items-center"
                 key={node.id}>
@@ -186,7 +186,7 @@ export const PropertyPanel: React.FC = () => {
                 />
                 <span className="w-9 text-right block">{v !== undefined ? v : value.content}</span>
               </div>
-            )
+            ) : null
           }
         }
         return null

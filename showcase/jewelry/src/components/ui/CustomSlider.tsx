@@ -20,7 +20,7 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
 }) => {
   const sliderRef = useRef<HTMLInputElement>(null)
   const [isDragging, setIsDragging] = useState(false)
-  const [debouncedValue, setDebouncedValue] = useDebounce(value, 10)
+  const [debouncedValue, setDebouncedValue] = useDebounce(value, 15)
 
   useEffect(() => {
     if (sliderRef.current) {
@@ -48,7 +48,10 @@ const CustomSlider: React.FC<CustomSliderProps> = ({
     const percent = Math.max(0, Math.min(1, (touch.clientX - rect.left) / rect.width))
     const newValue = min + percent * (max - min)
     const steppedValue = Math.round(newValue / step) * step
-    setDebouncedValue(Math.max(min, Math.min(max, steppedValue)))
+    const v = Math.max(min, Math.min(max, steppedValue))
+    // truncate to 2 decimal places
+    const truncatedValue = Math.round(v * 100) / 100
+    setDebouncedValue(truncatedValue)
   }, [isDragging, min, max, step, setDebouncedValue])
 
   const handleTouchEnd = useCallback(() => {

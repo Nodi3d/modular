@@ -3,7 +3,7 @@ import type { FC } from 'react';
 
 const Loader: FC = () => {
   return (
-    <div className="absolute inset-0 bg-black/10 flex justify-center items-center z-50">
+    <div className="absolute inset-0 bg-black/10 flex justify-center items-center z-50 pointer-events-none">
 
     <svg
       aria-hidden="true"
