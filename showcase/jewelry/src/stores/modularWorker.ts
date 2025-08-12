@@ -175,9 +175,14 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
   },
 
   updateNodeProperty: async (id, value) => {
-    const { isConnected, nodes, setGeometries, setNodes } = get();
+    const { isConnected, nodes, setGeometries, isLoading } = get();
     if (!isConnected) {
       console.warn('Worker not connected');
+      return;
+    }
+
+    if (isLoading) {
+      console.warn('Graph is already loading');
       return;
     }
 

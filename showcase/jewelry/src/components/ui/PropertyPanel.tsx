@@ -108,7 +108,7 @@ export const PropertyPanel: React.FC = () => {
         if (label === 'twist') return twistParameters.twist
         if (label === 'polygon') return twistParameters.polygon
       }
-      return 0
+      return undefined;
     },
     [currentType, braidParameters, bypassParameters, twistParameters]
   )
@@ -132,94 +132,23 @@ export const PropertyPanel: React.FC = () => {
 
   const handleChange = useCallback(
     (id: string, value: number) => {
-      // 現在の値と同じ場合は更新しない
-      const node = nodes.find(n => n.id === id)
-      const currentValue = node?.properties.find(p => p.name === 'value')?.value.content
-      if (currentValue !== value) {
-        updateNodeProperty(id, value)
-      }
+      updateNodeProperty(id, value)
     },
-    [nodes, updateNodeProperty]
+    [updateNodeProperty]
   )
 
   const handleParameterUpdate = useCallback(
     (paramName: string, value: number) => {
       updateParameteStore(paramName, value)
-      console.log(`${currentType} > ${paramName}`, getParameterValue(paramName))
 
       // nodeのプロパティも更新
       const node = nodes.find(n => n.label === paramName)
-      if (node) {
+      if (node !== undefined) {
         handleChange(node.id, value)
       }
     },
-    [updateParameteStore, currentType, getParameterValue, nodes, handleChange]
+    [updateParameteStore, nodes, handleChange]
   )
-
-  // const params = useMemo(() => {
-  //   const nodeParams = nodes
-  //     .map(node => {
-  //       const { properties } = node
-  //       const property = properties.find(prop => prop.name === 'value')
-  //       if (property === undefined) {
-  //         return null
-  //       }
-
-  //       const { value } = property
-  //       if (node.label !== undefined && node.label.trim() !== '' && value.type === 'Number') {
-  //         const range = properties.find(prop => prop.name === 'range')
-  //         const step = properties.find(prop => prop.name === 'step')
-
-  //         const parameter = {
-  //           id: node.id,
-  //           name: node.label,
-  //           value: value.content,
-  //         }
-
-  //         if (range?.value.type === 'Vector2d' && step?.value.type === 'Number') {
-  //           return {
-  //             min: range.value.content[0],
-  //             max: range.value.content[1],
-  //             step: step.value.content,
-  //             ...parameter,
-  //           }
-  //         }
-
-  //         return parameter
-  //       }
-  //       return null
-  //     })
-  //     .reduce((acc, curr) => {
-  //       if (curr !== null && curr.name && curr.name.trim() !== '') {
-  //         if ('min' in curr) {
-  //           acc[curr.name] = {
-  //             value: curr.value,
-  //             min: curr.min,
-  //             max: curr.max,
-  //             step: curr.step,
-  //             onChange: (value: number) => {
-  //               handleChange(curr.id, value)
-  //             },
-  //           }
-  //         } else {
-  //           acc[curr.name] = {
-  //             value: curr.value,
-  //             onChange: (value: number) => {
-  //               handleChange(curr.id, value)
-  //             },
-  //           }
-  //         }
-  //       }
-  //       return acc
-  //     }, {} as Schema)
-
-  //   // Add DXF export button
-  //   return {
-  //     ...nodeParams,
-  //   }
-  // }, [nodes, handleChange])
-
-  // useControls(params, [params])
 
   const paramsDom = useMemo(() => {
     const nodeParamsDom = nodes
@@ -238,7 +167,7 @@ export const PropertyPanel: React.FC = () => {
 
           if (range?.value.type === 'Vector2d' && step?.value.type === 'Number') {
             const v = getParameterValue(node.label)
-            return (
+            return v !== undefined ? (
               <div
                 className="grid grid-cols-[minmax(0,_1fr)_minmax(62px,_1fr)_minmax(36px,_auto)] items-center"
                 key={node.id}>
@@ -257,7 +186,7 @@ export const PropertyPanel: React.FC = () => {
                 />
                 <span className="w-9 text-right block">{v !== undefined ? v : value.content}</span>
               </div>
-            )
+            ) : null
           }
         }
         return null
@@ -279,7 +208,7 @@ export const PropertyPanel: React.FC = () => {
       handleChange(nodeIds.innerDiameter, value)
       setSize(value, locale)
     },
-    [handleChange, setSize]
+    [handleChange, nodeIds.innerDiameter, setSize]
   )
 
   return (
@@ -351,16 +280,13 @@ export const PropertyPanel: React.FC = () => {
               <p>{materials.find(m => m.label === material)?.label}</p>
             </div>
             <motion.ul
-              // className={`absolute bottom-20 bg-surface-sheet-l rounded-3xl p-4 backdrop-blur-md ${
-              //   currentMenu === 1 ? 'w-96' : 'w-[240px]'
-              // }`}
-              // animate={{
-              //   x: currentMenu * 120 - ((currentMenu === 1 ? 384 / 2 : 120) - 60),
-              // }}
               className={`absolute bottom-20 bg-surface-sheet-h rounded-3xl p-4 backdrop-blur-md ${
-                currentMenu === 1 ? 'w-96' : 'min-w-[160px]'
+                currentMenu === 1 ? 'w-80' : 'min-w-[160px]'
               }`}
-              animate={{ x: '-50%', left: currentMenu * 120 + 60 }}
+              animate={{ 
+                x: `-${currentMenu * 50}%`,
+                left: `${currentMenu * 180}px`
+              }}
               transition={{
                 type: 'spring',
                 visualDuration: 0.2,
