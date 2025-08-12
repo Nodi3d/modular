@@ -155,32 +155,28 @@ export const PropertyPanel: React.FC = () => {
   const handleChange = useCallback(
     (id: string, value: number) => {
       // 現在の値と同じ場合は更新しない
-      const node = nodes.find((n) => n.id === id);
-      const currentValue = node?.properties.find((p) => p.name === "value")
-        ?.value.content;
-      if (currentValue !== value) {
-        updateNodeProperty(id, value);
-      }
+      // const node = nodes.find(n => n.id === id)
+      // const currentValue = node?.properties.find(p => p.name === 'value')?.value.content
+      // if (currentValue !== value) {
+        updateNodeProperty(id, value)
+      // }
     },
-    [nodes, updateNodeProperty]
-  );
+    [updateNodeProperty]
+  )
 
   const handleParameterUpdate = useCallback(
     (paramName: string, value: number) => {
-      updateParameteStore(paramName, value);
-      console.log(
-        `${currentType} > ${paramName}`,
-        getParameterValue(paramName)
-      );
+      updateParameteStore(paramName, value)
+      // console.log(`${currentType} > ${paramName}`, getParameterValue(paramName))
 
       // nodeのプロパティも更新
-      const node = nodes.find((n) => n.label === paramName);
-      if (node) {
-        handleChange(node.id, value);
+      const node = nodes.find(n => n.label === paramName)
+      if (node !== undefined) {
+        handleChange(node.id, value)
       }
     },
-    [updateParameteStore, currentType, getParameterValue, nodes, handleChange]
-  );
+    [updateParameteStore, nodes, handleChange]
+  )
 
   // const params = useMemo(() => {
   //   const nodeParams = nodes
@@ -315,8 +311,8 @@ export const PropertyPanel: React.FC = () => {
       handleChange(nodeIds.innerDiameter, value);
       setSize(value, locale);
     },
-    [handleChange, setSize]
-  );
+    [handleChange, nodeIds.innerDiameter, setSize]
+  )
 
   return (
     <div
