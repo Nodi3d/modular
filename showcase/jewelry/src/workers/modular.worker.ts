@@ -15,6 +15,14 @@ async function initializeModular() {
   if (!initialized) {
     await init();
     modular = Modular.new();
+    modular.updateTessellationOptions({
+      enabled: true,
+      normTolerance: 0.01,
+      minDivsU: 1,
+      minDivsV: 1,
+      minDepth: 1,
+      maxDepth: 3,
+    });
     initialized = true;
   }
 }
