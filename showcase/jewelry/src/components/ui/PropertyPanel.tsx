@@ -23,8 +23,22 @@ export const PropertyPanel: React.FC = () => {
     setMaterial,
     setSize,
   } = useRingStore()
-  const sizeRef = useRef(size)
-  sizeRef.current = size
+
+  const parametersRef = useRef({
+    type: currentType,
+    size: size,
+    braid: braidParameters,
+    bypass: bypassParameters,
+    twist: twistParameters,
+  })
+
+  parametersRef.current = {
+    type: currentType,
+    size: size,
+    braid: braidParameters,
+    bypass: bypassParameters,
+    twist: twistParameters,
+  }
 
   const types = useMemo(() => ['braid', 'bypass', 'twist'], [])
   const materials = useMemo(() => [
@@ -216,8 +230,27 @@ export const PropertyPanel: React.FC = () => {
 
   useEffect(() => {
     // trigger change slug
-    handleChange([{ id: nodeIds.innerDiameter, value: sizeRef.current.value }])
-  }, [nodeIds.innerDiameter, handleChange, sizeRef])
+    const {
+      type,
+      size,
+    } = parametersRef.current;
+
+    const params = type === 'braid' ? parametersRef.current.braid : type === 'bypass' ? parametersRef.current.bypass : parametersRef.current.twist;
+
+    // revert previous parameters
+    const props = Object.entries(params).map(([key, value]) => {
+      const found = nodes.find((n) => n.label === key);
+      if (found === undefined) {
+        return undefined;
+      }
+      return {
+        id: found.id,
+        value: value,
+      };
+    }).filter((p) => p !== undefined);
+
+    handleChange([...props, { id: nodeIds.innerDiameter, value: size.value }])
+  }, [nodes, nodeIds.innerDiameter, handleChange, parametersRef])
 
   return (
     <div className="absolute bottom-24 inset-x-0 z-10 font-serif" ref={panelRef}>
