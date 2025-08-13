@@ -1,0 +1,69 @@
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+firebase-debug.log*
+ui-debug.log*
+
+
+.yarn/install-state.gz
+
+# dependencies
+node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+
+# next.js
+/.next/
+/out/
+
+# production
+/build
+/dist
+
+# Firebase
+/.firebase/
+.firebaserc
+firebase-config.json
+
+# misc
+.DS_Store
+*.pem
+
+# local env files
+.env
+.env.*
+!.env.example
+
+# cache
+.cache/
+.temp/
+
+# backup and temp files
+*~
+*.bak
+*.swp
+*.tmp
+.Trash-*
+
+# vercel
+.vercel
+
+# typescript
+*.tsbuildinfo
+next-env.d.ts
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?

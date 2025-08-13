@@ -1,0 +1,36 @@
+{
+  "recommendations": [
+    // コードフォーマット
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    
+    // TypeScript/JavaScript
+    "ms-vscode.vscode-typescript-next",
+    
+    // React
+    "dsznajder.es7-react-js-snippets",
+    "rodrigovallades.es7-react-js-snippets",
+    
+    // CSS/Tailwind
+    "bradlc.vscode-tailwindcss",
+    "stylelint.vscode-stylelint",
+    
+    // Git
+    "eamodio.gitlens",
+    "mhutchie.git-graph",
+    
+    // 開発補助
+    "christian-kohler.path-intellisense",
+    "formulahendry.auto-rename-tag",
+    "naumovs.color-highlight",
+    "yoavbls.pretty-ts-errors",
+    
+    // デバッグ
+    "ms-vscode.js-debug-nightly",
+    
+    // その他便利ツール
+    "streetsidesoftware.code-spell-checker",
+    "usernamehw.errorlens"
+  ],
+  "unwantedRecommendations": []
+}
