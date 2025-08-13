@@ -24,7 +24,7 @@ const ModularInitializer = memo(() => {
       loadGraph(slug as string)
     }
     setCurrentType(slug as RingType)
-  }, [isConnected, loadGraph, slug])
+  }, [isConnected, loadGraph, setCurrentType, slug])
 
   return null
 })
@@ -36,10 +36,7 @@ function App() {
     <div className="flex flex-col h-screen w-screen">
       <BrowserRouter>
         <Routes>
-          <Route
-            path="/"
-            element={<Navigate to="/braid" replace />}
-          />
+          <Route path="/" element={<Navigate to="/braid" replace />} />
           <Route
             path="/:slug"
             element={
