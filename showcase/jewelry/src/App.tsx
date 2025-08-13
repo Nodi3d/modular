@@ -2,7 +2,7 @@ import Canvas from '@/components/3d/Canvas'
 import { PropertyPanel } from '@/components/ui/PropertyPanel'
 import { RingType, useModularWorkerStore } from '@/stores/modularWorker'
 import { memo, useEffect } from 'react'
-import { BrowserRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
+import { HashRouter, Navigate, Route, Routes, useParams } from 'react-router-dom'
 import { Download } from './components/ui/Download'
 import { Loader } from './components/ui/Loader'
 
@@ -34,7 +34,7 @@ function App() {
 
   return (
     <div className="flex flex-col h-screen w-screen">
-      <BrowserRouter>
+      <HashRouter>
         <Routes>
           <Route path="/" element={<Navigate to="/braid" replace />} />
           <Route
@@ -50,7 +50,7 @@ function App() {
         <PropertyPanel />
         <Download />
         {isLoading && <Loader />}
-      </BrowserRouter>
+      </HashRouter>
     </div>
   )
 }
