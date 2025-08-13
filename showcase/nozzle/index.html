@@ -7,46 +7,46 @@
     <title>3D Nozzle Configurator</title>
     <meta
       name="description"
-      content="Design and customize 3D printable nozzles with adjustable parameters. Real-time 3D preview with precise dimensional control for custom nozzle manufacturing." />
+      content="Design and customize 3D printable nozzles with adjustable parameters. Real-time 3D preview with precise dimensional control for custom nozzle manufacturing."
+    />
     <meta
       name="keywords"
-      content="3d nozzle design configurator extruder custom manufacturing 3d printing" />
-    <meta
-      property="og:title"
-      content="3D Nozzle Configurator | Custom Nozzle Design Tool" />
+      content="3d nozzle design configurator extruder custom manufacturing 3d printing"
+    />
+    <meta property="og:title" content="3D Nozzle Configurator | Custom Nozzle Design Tool" />
     <meta
       property="og:description"
-      content="Design and customize 3D printable nozzles with adjustable parameters. Real-time 3D preview with precise dimensional control for custom nozzle manufacturing." />
-    <meta property="og:url" content="https://sorashin.github.io/nozzle-configurator/" />
+      content="Design and customize 3D printable nozzles with adjustable parameters. Real-time 3D preview with precise dimensional control for custom nozzle manufacturing."
+    />
+    <meta property="og:url" content="https://nozzle.nodi3d.com" />
     <meta property="og:image" content="/images/ogp.png" />
     <!-- Google Search Console -->
-    <meta
-      name="google-site-verification"
-      content="it1Y3wJLiJ9LPOJpsQpnazoG30S3F_WL9LzYg9moEzU" />
-    
+    <meta name="google-site-verification" content="it1Y3wJLiJ9LPOJpsQpnazoG30S3F_WL9LzYg9moEzU" />
   </head>
   <body>
     <div id="root"></div>
     <script>
       // GitHub Pages SPA support
-      (function(l) {
-        if (l.search[1] === '/' ) {
-          var decoded = l.search.slice(1).split('&').map(function(s) { 
-            return s.replace(/~and~/g, '&')
-          }).join('?');
-          window.history.replaceState(null, null,
-              l.pathname.slice(0, -1) + decoded + l.hash
-          );
+      ;(function (l) {
+        if (l.search[1] === '/') {
+          var decoded = l.search
+            .slice(1)
+            .split('&')
+            .map(function (s) {
+              return s.replace(/~and~/g, '&')
+            })
+            .join('?')
+          window.history.replaceState(null, null, l.pathname.slice(0, -1) + decoded + l.hash)
         }
-      }(window.location))
+      })(window.location)
     </script>
     <script type="module" src="/src/main.tsx"></script>
     <script>
       window.NODI_BADGE_CONFIG = {
-        theme: "light",
+        theme: 'light',
         showSecondLink: true,
-        secondLinkUrl: "https://github.com/Nodi3d/modular/tree/main/showcase/nozzle",
-      };
+        secondLinkUrl: 'https://github.com/Nodi3d/modular/tree/main/showcase/nozzle',
+      }
     </script>
     <script src="https://nodi-badge.pages.dev/badge.js"></script>
   </body>
