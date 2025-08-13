@@ -46,7 +46,7 @@ interface ModularWorkerState {
   disconnect: () => void;
   loadGraph: (slug?: string) => Promise<void>;
   evaluateGraph: () => Promise<void>;
-  updateNodeProperty: (id: string, value: number | string) => Promise<void>;
+  updateNodeProperty: (props: {id: string, value: number | string}[]) => Promise<void>;
   getNodeProperty: (label: string) => { id: string; outputs: unknown } | null;
 }
 
@@ -101,7 +101,7 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
 
   loadGraph: async (slug) => {
     const { isConnected, setNodes, setInputNodeId, setNodeIds } = get();
-    console.log('Loading graph:', slug);
+    // console.log('Loading graph:', slug);
     if (!isConnected) {
       console.warn('Worker not connected');
       return;
@@ -114,30 +114,28 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
       // slugに基づいてグラフを動的に読み込む
       const imported = await importGraph(slug? slug : 'braid');
       const graphData = imported.default;
+      // console.log('nodes:', nodes);
+
+      // 初期評価を実行
+      await get().evaluateGraph();
 
       const nodes = await client.loadGraph(JSON.stringify(graphData.graph));
       setNodes(nodes);
-      console.log('nodes:', nodes);
 
       // "input" ラベルを持つノードを検索
       const inputNode = nodes.find((node) => node.label === 'input');
-      if (inputNode) {
+      if (inputNode !== undefined) {
         setInputNodeId(inputNode.id);
       }
 
       // 各ラベルを持つノードを検索
       const innerDiameterNode = nodes.find((node) => node.label === 'innerDiameter');
-      
-
-      if (innerDiameterNode) {
+      if (innerDiameterNode !== undefined) {
         setNodeIds({
           innerDiameter: innerDiameterNode.id
         });
-        console.log('innerDiameterNode is Set:', innerDiameterNode);
+        //console.log('innerDiameterNode is Set:', innerDiameterNode);
       }
-
-      // 初期評価を実行
-      await get().evaluateGraph();
     } catch (error) {
       console.error(`Error loading graph for ${slug}:`, error);
     } finally {
@@ -167,14 +165,14 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
         .filter((g): g is GeometryWithId => g !== null);
 
       setGeometries(gs);
-      console.log('geometries:', gs);
+      // console.log('geometries:', gs);
     } catch (error) {
       console.error('Error evaluating graph:', error);
       setGeometries([]);
     }
   },
 
-  updateNodeProperty: async (id, value) => {
+  updateNodeProperty: async (props) => {
     const { isConnected, nodes, setGeometries, isLoading } = get();
     if (!isConnected) {
       console.warn('Worker not connected');
@@ -192,35 +190,32 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
     set({ isLoading: true });
     
     try {
-      // ノードの存在を確認
-      const targetNode = nodes.find((node) => node.id === id);
-      if (!targetNode) {
-        console.error(`Node with ID ${id} not found`);
-        set({ isLoading: false });
-        return;
-      }
-
-      const property: NodePropertyInterop =
-        typeof value === 'string'
-          ? {
-              name: 'content',
-              value: {
-                type: 'String' as const,
-                content: value,
-              },
-            }
-          : {
-              name: 'value',
-              value: {
-                type: 'Number' as const,
-                content: value as number,
-              },
-            };
-
-      console.log(`Updating node ${id} with property:`, property);
+      const payload = props.map(({ id, value }) => {
+        const targetNode = nodes.find((node) => node.id === id);
+        if (targetNode !== undefined) {
+          const property: NodePropertyInterop =
+            typeof value === 'string'
+              ? {
+                  name: 'content',
+                  value: {
+                    type: 'String' as const,
+                    content: value,
+                  },
+                }
+              : {
+                  name: 'value',
+                  value: {
+                    type: 'Number' as const,
+                    content: value as number,
+                  },
+                };
+            return { nodeId: id, property };
+        }
+        return undefined;
+      }).filter((p): p is { nodeId: string; property: NodePropertyInterop } => p !== undefined);
 
       // SharedWorkerが自動的に評価を実行してジオメトリとノードを返す
-      const response = await client.updateNodeProperty(id, property);
+      const response = await client.updateNodeProperties(payload);
       const { geometries } = response;
 
       // 更新されたノード情報を保存
@@ -238,7 +233,7 @@ export const useModularWorkerStore = create<ModularWorkerState>((set, get) => ({
 
       setGeometries(gs);
     } catch (error) {
-      console.error(`Error in updateNodeProperty for node ${id}:`, error);
+      console.error(`Error in updateNodeProperty:`, error);
     } finally {
       // ローディング終了
       set({ isLoading: false });

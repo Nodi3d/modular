@@ -23,8 +23,11 @@ export const PropertyPanel: React.FC = () => {
     setMaterial,
     setSize,
   } = useRingStore()
-  const types = ['braid', 'bypass', 'twist']
-  const materials = [
+  const sizeRef = useRef(size)
+  sizeRef.current = size
+
+  const types = useMemo(() => ['braid', 'bypass', 'twist'], [])
+  const materials = useMemo(() => [
     {
       label: 'gold',
       image: '/images/gold_t.png',
@@ -40,7 +43,7 @@ export const PropertyPanel: React.FC = () => {
       image: '/images/platinum_t.png',
       color: '#c6d9da',
     },
-  ]
+  ], [])
   const [currentMenu, setCurrentMenu] = useState(0)
   const [menuOpen, setMenuOpen] = useState(false)
   const panelRef = useRef<HTMLDivElement>(null)
@@ -131,8 +134,8 @@ export const PropertyPanel: React.FC = () => {
   }, [menuOpen])
 
   const handleChange = useCallback(
-    (id: string, value: number) => {
-      updateNodeProperty(id, value)
+    (props: { id: string, value: number }[]) => {
+      updateNodeProperty(props)
     },
     [updateNodeProperty]
   )
@@ -144,7 +147,7 @@ export const PropertyPanel: React.FC = () => {
       // nodeのプロパティも更新
       const node = nodes.find(n => n.label === paramName)
       if (node !== undefined) {
-        handleChange(node.id, value)
+        handleChange([{ id: node.id, value }])
       }
     },
     [updateParameteStore, nodes, handleChange]
@@ -205,11 +208,16 @@ export const PropertyPanel: React.FC = () => {
 
   const handleSizeUpdate = useCallback(
     (value: number, locale: string) => {
-      handleChange(nodeIds.innerDiameter, value)
+      handleChange([{ id: nodeIds.innerDiameter, value }])
       setSize(value, locale)
     },
     [handleChange, nodeIds.innerDiameter, setSize]
   )
+
+  useEffect(() => {
+    // trigger change slug
+    handleChange([{ id: nodeIds.innerDiameter, value: sizeRef.current.value }])
+  }, [nodeIds.innerDiameter, handleChange, sizeRef])
 
   return (
     <div className="absolute bottom-24 inset-x-0 z-10 font-serif" ref={panelRef}>

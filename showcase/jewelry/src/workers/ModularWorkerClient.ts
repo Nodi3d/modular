@@ -33,7 +33,7 @@ export class ModularWorkerClientImpl implements ModularWorkerClient {
         // メッセージハンドリング
         this.port.onmessage = (event: MessageEvent<ModularWorkerResponse>) => {
           const { type, payload } = event.data;
-          console.log('type:', type);
+          // console.log('type:', type);
 
           if (type === 'connected') {
             this.initialized = payload.initialized;
@@ -145,9 +145,11 @@ export class ModularWorkerClientImpl implements ModularWorkerClient {
     return response.geometries;
   }
 
-  async updateNodeProperty(
-    nodeId: string,
-    property: NodePropertyInterop,
+  async updateNodeProperties(
+    properties: {
+      nodeId: string;
+      property: NodePropertyInterop;
+    }[],
   ): Promise<{
     geometries: Array<{
       id: GeometryIdentifier;
@@ -163,7 +165,7 @@ export class ModularWorkerClientImpl implements ModularWorkerClient {
         transform: GeometryIdentifier['transform'];
       }>;
       nodes: NodeInterop[];
-    }>({ type: 'updateNodeProperty', payload: { nodeId, property } }, 'nodeUpdated');
+    }>({ type: 'updateNodeProperties', payload: properties }, 'nodeUpdated');
     return response;
   }
 
