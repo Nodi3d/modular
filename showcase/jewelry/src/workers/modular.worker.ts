@@ -85,14 +85,15 @@ async function handleMessage(event: MessageEvent<ModularWorkerMessage>, port: Me
         break;
       }
 
-      case 'updateNodeProperty': {
-        console.log('updateNodeProperty in worker');
+      case 'updateNodeProperties': {
+        console.log('updateNodeProperties in worker');
         if (!modular) {
           throw new Error('Modular not initialized');
         }
 
-        const { nodeId, property } = payload;
-        modular.changeNodeProperty(nodeId, property);
+        payload.forEach(({ nodeId, property }) => { 
+          modular?.changeNodeProperty(nodeId, property);
+        });
 
         // 更新されたノード情報を取得
         const nodes = modular.getNodes();

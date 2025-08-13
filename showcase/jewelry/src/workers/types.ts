@@ -12,11 +12,11 @@ export type ModularWorkerMessage =
   | { type: 'loadGraph'; payload: { graphData: string } }
   | { type: 'evaluate'; payload: Record<string, never> }
   | {
-      type: 'updateNodeProperty';
+      type: 'updateNodeProperties';
       payload: {
         nodeId: string;
         property: NodePropertyInterop;
-      };
+      }[];
     }
   | { type: 'getNodes'; payload: Record<string, never> };
 
@@ -63,9 +63,11 @@ export interface ModularWorkerClient {
       transform: GeometryIdentifier['transform'];
     }>
   >;
-  updateNodeProperty(
-    nodeId: string,
-    property: NodePropertyInterop,
+  updateNodeProperties(
+    properties: {
+      nodeId: string;
+      property: NodePropertyInterop;
+    }[],
   ): Promise<{
     geometries: Array<{
       id: GeometryIdentifier;
