@@ -1,6 +1,7 @@
 # Nodi modular
 
 [![npm version](https://img.shields.io/npm/v/nodi-modular.svg?style=flat)](https://www.npmjs.com/package/nodi-modular)
+[![License](https://img.shields.io/npm/l/nodi-modular.svg?style=flat)](https://www.npmjs.com/package/nodi-modular)
 
 Modular is a module project designed to import node graphs created in Nodi in JSON format, enabling the extraction of geometric data generated based on the node graph structure.
 
