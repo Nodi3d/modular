@@ -5,7 +5,7 @@ import { Schema } from "leva/dist/declarations/src/types";
 import init, { Modular, NodeInterop } from "nodi-modular";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BufferAttribute, BufferGeometry, DoubleSide, Euler, Matrix4 } from "three";
-import frange from "./frange.json";
+import flange from "./flange.json";
 import Drawing from "dxf-writer";
 
 function App() {
@@ -246,7 +246,7 @@ function App() {
 
   useEffect(() => {
     if (modular !== null) {
-      modular.loadGraph(JSON.stringify(frange.graph));
+      modular.loadGraph(JSON.stringify(flange.graph));
       // modular.loadGraph(JSON.stringify(brickWall.graph));
       const nodes = modular.getNodes();
       const numberNodes = nodes.filter((n) => n.variant === "Number" || n.variant === "NumberSlider");
