@@ -1,12 +1,12 @@
-# Nodi Modular Sample - Frange Configurator
+# Nodi Modular Sample - Flange Configurator
 
-A Frange (pipe flange) component configurator built with the nodi-modular library, featuring interactive 3D visualization and technical drawing export capabilities.
+A Flange (pipe flange) component configurator built with the nodi-modular library, featuring interactive 3D visualization and technical drawing export capabilities.
 
 ## Features
 
 ![flange](./public//flange.gif)
 
-- **Export DXF**: Download Frange technical drawings (3-view projections) in DXF format for manufacturing
+- **Export DXF**: Download Flange technical drawings (3-view projections) in DXF format for manufacturing
 - **Adjust Size**: Modify nominal diameter, number of holes, and other flange parameters in real-time
 - **3D Visualization**: Interactive 3D rendering of both mesh geometries and construction curves
 - **Real-time Updates**: Instant visual feedback when adjusting flange parameters
@@ -14,11 +14,13 @@ A Frange (pipe flange) component configurator built with the nodi-modular librar
 ## Getting Started
 
 1. Install dependencies:
+
 ```bash
 npm install
 ```
 
 2. Start the development server:
+
 ```bash
 npm run dev
 ```
@@ -60,4 +62,3 @@ This application uses the following Nodi project:
    - Curve geometries: Construction lines, bolt hole patterns, and technical annotations
    - Optimized normal vectors for uniform appearance
 7. **DXF Export**: Converts curve geometries to 2D technical drawings and exports as DXF files for CAD/manufacturing workflows
-
