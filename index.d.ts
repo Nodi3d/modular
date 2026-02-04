@@ -1289,25 +1289,6 @@ export class Modular {
     updateTessellationOptions(options?: AdaptiveTessellationOptions | null): void;
 }
 
-/**
- * Invoke options.
- *
- * To pass options to an invoke call, use the
- * [`with_options`](Invoke::with_options) method.
- *
- * You can create options from
- * [headers](IntoHeaders::into_options).
- */
-export class Options {
-    private constructor();
-    free(): void;
-    [Symbol.dispose](): void;
-    /**
-     * Returns options headers.
-     */
-    readonly headers: any;
-}
-
 export function do_nothing_just_tell_wasm_bindgen_to_generate_types(): void;
 
 export type InitInput = RequestInfo | URL | Response | BufferSource | WebAssembly.Module;
@@ -1327,8 +1308,6 @@ export interface InitOutput {
     readonly modular_new: () => number;
     readonly modular_updateTessellationOptions: (a: number, b: number) => void;
     readonly do_nothing_just_tell_wasm_bindgen_to_generate_types: () => void;
-    readonly __wbg_options_free: (a: number, b: number) => void;
-    readonly options_headers: (a: number) => any;
     readonly wasm_bindgen__closure__destroy__h3fdafb665afa6310: (a: number, b: number) => void;
     readonly wasm_bindgen__convert__closures_____invoke__h631ee502614521f5: (a: number, b: number, c: any, d: any) => void;
     readonly wasm_bindgen__convert__closures_____invoke__hd6c6aa01338fb7aa: (a: number, b: number, c: any) => void;

@@ -127,49 +127,9 @@ export class Modular {
 }
 if (Symbol.dispose) Modular.prototype[Symbol.dispose] = Modular.prototype.free;
 
-/**
- * Invoke options.
- *
- * To pass options to an invoke call, use the
- * [`with_options`](Invoke::with_options) method.
- *
- * You can create options from
- * [headers](IntoHeaders::into_options).
- */
-export class Options {
-    static __wrap(ptr) {
-        ptr = ptr >>> 0;
-        const obj = Object.create(Options.prototype);
-        obj.__wbg_ptr = ptr;
-        OptionsFinalization.register(obj, obj.__wbg_ptr, obj);
-        return obj;
-    }
-    __destroy_into_raw() {
-        const ptr = this.__wbg_ptr;
-        this.__wbg_ptr = 0;
-        OptionsFinalization.unregister(this);
-        return ptr;
-    }
-    free() {
-        const ptr = this.__destroy_into_raw();
-        wasm.__wbg_options_free(ptr, 0);
-    }
-    /**
-     * Returns options headers.
-     * @returns {any}
-     */
-    get headers() {
-        const ptr = this.__destroy_into_raw();
-        const ret = wasm.options_headers(ptr);
-        return ret;
-    }
-}
-if (Symbol.dispose) Options.prototype[Symbol.dispose] = Options.prototype.free;
-
 export function do_nothing_just_tell_wasm_bindgen_to_generate_types() {
     wasm.do_nothing_just_tell_wasm_bindgen_to_generate_types();
 }
-import * as import1 from "./snippets/tauri-wasm-4f47d781d24ed75c/core.js"
 
 function __wbg_get_imports() {
     const import0 = {
@@ -447,10 +407,6 @@ function __wbg_get_imports() {
                 result = false;
             }
             const ret = result;
-            return ret;
-        },
-        __wbg_invoke_38bb36f6a849e2e3: function(arg0, arg1, arg2) {
-            const ret = window.__TAURI__.core.invoke(arg0, arg1, Options.__wrap(arg2));
             return ret;
         },
         __wbg_isArray_d314bb98fcf08331: function(arg0) {
@@ -1008,7 +964,7 @@ function __wbg_get_imports() {
             arg0.writeBuffer(arg1, arg2, arg3, arg4, arg5);
         }, arguments); },
         __wbindgen_cast_0000000000000001: function(arg0, arg1) {
-            // Cast intrinsic for `Closure(Closure { dtor_idx: 3826, function: Function { arguments: [Externref], shim_idx: 3827, ret: Unit, inner_ret: Some(Unit) }, mutable: true }) -> Externref`.
+            // Cast intrinsic for `Closure(Closure { dtor_idx: 3823, function: Function { arguments: [Externref], shim_idx: 3824, ret: Unit, inner_ret: Some(Unit) }, mutable: true }) -> Externref`.
             const ret = makeMutClosure(arg0, arg1, wasm.wasm_bindgen__closure__destroy__h3fdafb665afa6310, wasm_bindgen__convert__closures_____invoke__hd6c6aa01338fb7aa);
             return ret;
         },
@@ -1050,7 +1006,6 @@ function __wbg_get_imports() {
     return {
         __proto__: null,
         "./index_bg.js": import0,
-        "./snippets/tauri-wasm-4f47d781d24ed75c/core.js": import1,
     };
 }
 
@@ -1091,9 +1046,6 @@ const __wbindgen_enum_GpuTextureViewDimension = ["1d", "2d", "2d-array", "cube",
 const ModularFinalization = (typeof FinalizationRegistry === 'undefined')
     ? { register: () => {}, unregister: () => {} }
     : new FinalizationRegistry(ptr => wasm.__wbg_modular_free(ptr >>> 0, 1));
-const OptionsFinalization = (typeof FinalizationRegistry === 'undefined')
-    ? { register: () => {}, unregister: () => {} }
-    : new FinalizationRegistry(ptr => wasm.__wbg_options_free(ptr >>> 0, 1));
 
 function addToExternrefTable0(obj) {
     const idx = wasm.__externref_table_alloc();
