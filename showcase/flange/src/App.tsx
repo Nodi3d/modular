@@ -15,6 +15,8 @@ function App() {
   const [curveGeometries, setCurveGeometries] = useState<BufferGeometry[]>([]);
   // const debounceTimeoutRef = useRef<number | null>(null);
   const evaluateRef = useRef<(m: Modular) => void>();
+  const handleChangeRef = useRef<(id: string, value: number) => void>();
+  const exportToDxfRef = useRef<() => void>();
 
   const evaluate = useCallback(
     (m: Modular) => {
@@ -88,7 +90,7 @@ function App() {
     []
   );
 
-  // Keep evaluate function reference up to date
+  // Keep function references up to date
   evaluateRef.current = evaluate;
 
   const handleChange = useCallback(
@@ -124,6 +126,8 @@ function App() {
     },
     [modular]
   );
+
+  handleChangeRef.current = handleChange;
 
   const exportToDxf = useCallback(() => {
     if (curveGeometries.length === 0) {
@@ -171,6 +175,8 @@ function App() {
     URL.revokeObjectURL(url);
   }, [curveGeometries]);
 
+  exportToDxfRef.current = exportToDxf;
+
   const params = useMemo(() => {
     const nodeParams = nodes
       .map((node) => {
@@ -213,14 +219,14 @@ function App() {
               max: curr.max,
               step: curr.step,
               onChange: (value: number) => {
-                handleChange(curr.id, value);
+                handleChangeRef.current?.(curr.id, value);
               },
             };
           } else {
             acc[curr.name] = {
               value: curr.value,
               onChange: (value: number) => {
-                handleChange(curr.id, value);
+                handleChangeRef.current?.(curr.id, value);
               },
             };
           }
@@ -231,9 +237,9 @@ function App() {
     // Add DXF export button
     return {
       ...nodeParams,
-      "Export DXF": button(exportToDxf),
+      "Export DXF": button(() => exportToDxfRef.current?.()),
     };
-  }, [nodes, handleChange, exportToDxf]);
+  }, [nodes]);
 
   useControls(params, [params]);
 
