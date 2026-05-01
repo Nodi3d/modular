@@ -7233,10 +7233,10 @@ node-releases@^2.0.18:
   resolved "https://registry.yarnpkg.com/node-releases/-/node-releases-2.0.18.tgz#f010e8d35e2fe8d6b2944f03f70213ecedc4ca3f"
   integrity sha512-d9VeXT4SJ7ZeOqGX6R5EM022wpL+eWPooLI+5UpWn2jCT1aosUQEhQP214x33Wkwx3JQMvIm+tIoVOdodFS40g==
 
-nodi-modular@^0.0.39:
-  version "0.0.39"
-  resolved "https://registry.yarnpkg.com/nodi-modular/-/nodi-modular-0.0.39.tgz#4d7a709cd484e4ee1f673d57430a00e2a4a67b85"
-  integrity sha512-i9pZ4PotfFfZ328KiYfwlsWYopH6L4H4DkG+z4msoBwo13vMr1ubMG8D10esUNiD/9+QOhUcAARbnD0MPRZGRQ==
+nodi-modular@^0.0.40:
+  version "0.0.40"
+  resolved "https://registry.yarnpkg.com/nodi-modular/-/nodi-modular-0.0.40.tgz#ef5ef26f1e6024abed59334c299dccc5aab1e9f0"
+  integrity sha512-NX9LMGO3BYe6fxGQcIiOnCiGVxjAZDUz1L+4pIZosb1q0NW+0o/ttpsfxPYPMEo5qVes88s4spA3E1GdeWxvbg==
 
 normalize-path@^3.0.0, normalize-path@~3.0.0:
   version "3.0.0"

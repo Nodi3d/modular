@@ -1,4 +1,4 @@
-import init, { Modular } from "npm:nodi-modular@0.0.10";
+import init, { Modular } from "npm:nodi-modular@0.0.40";
 import { assertEquals } from "https://deno.land/std@0.224.0/assert/assert_equals.ts";
 import file from "./attractor.json" with { type: "json" };
 
@@ -15,7 +15,7 @@ const result = await modular.evaluate();
 assertEquals(result.geometryIdentifiers.length, 64);
 
 result.geometryIdentifiers.forEach((id) => {
-  // get geometry by id 
+  // get geometry by id
   const geometry = modular.findGeometryById(id);
   console.log(geometry);
 });
@@ -40,4 +40,3 @@ if (numberOfGrid !== undefined) {
 // re-evaluate the graph after changing the number of grid
 const result2 = await modular.evaluate();
 assertEquals(result2.geometryIdentifiers.length, (gridCount + 1) * (gridCount + 1));
-
