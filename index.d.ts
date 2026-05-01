@@ -149,20 +149,6 @@ export interface MeshTriangleFace {
 }
 
 /**
- * A geometry object with a transformation
- */
-export interface GeometryTransform {
-    /**
-     * The handle to the geometry object
-     */
-    geometry: Handle<GeometryProxy>;
-    /**
-     * Transformation matrix of the geometry
-     */
-    transform: Transform3<number>;
-}
-
-/**
  * A parameter for an input or output of a node.
  */
 export interface IOParameter<T, U> {
@@ -202,7 +188,7 @@ export interface GraphNodeSet {
 /**
  * A sub graph is a graph that is a part of a larger graph
  */
-export interface SubGraph<T, U> {
+export interface SubGraph<T> {
     /**
      * The id of the sub graph
      */
@@ -210,7 +196,7 @@ export interface SubGraph<T, U> {
     /**
      * The graph of the sub graph
      */
-    graph: Graph<T, U>;
+    graph: Graph<T>;
     /**
      * The instances of the sub graph
      */
@@ -316,6 +302,84 @@ export interface OrientedBox {
 }
 
 /**
+ * Analysis result display handle for wasm interop
+ * Used to display FEM/implicit analysis results as colored surface mesh
+ */
+export interface AnalysisDisplayHandle {
+    /**
+     * Pointer to positions array [[f32; 3]; n]
+     */
+    positionsPtr: number;
+    /**
+     * Number of positions
+     */
+    positionsLen: number;
+    /**
+     * Pointer to colors array [[f32; 4]; n]
+     */
+    colorsPtr: number;
+    /**
+     * Number of colors
+     */
+    colorsLen: number;
+    /**
+     * Pointer to indices array [[u32; 3]; n]
+     */
+    indicesPtr: number;
+    /**
+     * Number of triangles
+     */
+    indicesLen: number;
+    /**
+     * Scalar value range [min, max]
+     */
+    scalarRange: [number, number];
+    /**
+     * Attribute name being visualized
+     */
+    attributeName: string;
+}
+
+/**
+ * BC display handle for wasm interop
+ * Used to display boundary condition markers, arrows, and optional BC surface meshes
+ */
+export interface BCDisplayHandle {
+    /**
+     * Pointer to positions array [[f32; 3]; n] (BC surface meshes, may be empty)
+     */
+    positionsPtr: number;
+    /**
+     * Number of positions
+     */
+    positionsLen: number;
+    /**
+     * Pointer to colors array [[f32; 4]; n]
+     */
+    colorsPtr: number;
+    /**
+     * Number of colors
+     */
+    colorsLen: number;
+    /**
+     * Pointer to indices array [[u32; 3]; n]
+     */
+    indicesPtr: number;
+    /**
+     * Number of triangles
+     */
+    indicesLen: number;
+    /**
+     * Constraint markers for boundary condition visualization
+     */
+    constraintMarkers: ConstraintMarkerHandle[];
+    /**
+     * Load arrows for force visualization
+     */
+    loadArrows: LoadArrowHandle[];
+}
+
+/**
  * Clip plane display handle for wasm interop
  * Used to display geometry clipped by a plane
  */
@@ -384,53 +448,6 @@ export interface IOVariables {
 export type Item = { variant: "Bool"; data: boolean } | { variant: "String"; data: string } | { variant: "Number"; data: number } | { variant: "Domain"; data: Domain } | { variant: "Vector3"; data: Vector3<number> } | { variant: "Matrix4"; data: Matrix4<number> } | { variant: "Complex"; data: Complex<number> } | { variant: "Point3"; data: Point3<number> } | { variant: "Plane"; data: Plane } | { variant: "GeometryTransform"; data: GeometryTransformInterop } | { variant: "MeshFace"; data: MeshTriangleFace };
 
 /**
- * FEM display handle for wasm interop
- * Used to display FEM analysis results as colored surface mesh
- */
-export interface FEMDisplayHandle {
-    /**
-     * Pointer to positions array [[f32; 3]; n]
-     */
-    positionsPtr: number;
-    /**
-     * Number of positions
-     */
-    positionsLen: number;
-    /**
-     * Pointer to colors array [[f32; 4]; n]
-     */
-    colorsPtr: number;
-    /**
-     * Number of colors
-     */
-    colorsLen: number;
-    /**
-     * Pointer to indices array [[u32; 3]; n]
-     */
-    indicesPtr: number;
-    /**
-     * Number of triangles
-     */
-    indicesLen: number;
-    /**
-     * Scalar value range [min, max]
-     */
-    scalarRange: [number, number];
-    /**
-     * Attribute name being visualized
-     */
-    attributeName: string;
-    /**
-     * Constraint markers for boundary condition visualization
-     */
-    constraintMarkers: ConstraintMarkerHandle[];
-    /**
-     * Load arrows for force visualization
-     */
-    loadArrows: LoadArrowHandle[];
-}
-
-/**
  * Geometry identifier
  */
 export interface GeometryIdentifier {
@@ -460,15 +477,15 @@ export type GeometryProxy = { variant: "Curve"; data: CurveProxy } | { variant: 
 /**
  * Graph structure
  */
-export interface Graph<T, U> {
+export interface Graph<T> {
     /**
      * Nodes in the graph
      */
-    nodes: IndexMap<NodeId, Node<T, U>>;
+    nodes: IndexMap<NodeId, Node<T>>;
     /**
      * nested graphs
      */
-    sub_graphs?: IndexMap<SubGraphId, SubGraph<T, U>>;
+    sub_graphs?: IndexMap<SubGraphId, SubGraph<T>>;
 }
 
 /**
@@ -568,7 +585,7 @@ export interface ImplicitIdentifier {
 /**
  * Interop proxy for various geometry types
  */
-export type GeometryInterop = { variant: "Mesh"; data: MeshInterop } | { variant: "VolumeMesh"; data: VolumeMeshInterop } | { variant: "Curve"; data: CurveInterop } | { variant: "Point"; data: PointCloudInterop } | { variant: "Plane"; data: Plane } | { variant: "Group"; data: GeometryInterop[] };
+export type GeometryInterop = { variant: "Mesh"; data: MeshInterop } | { variant: "VolumeMesh"; data: VolumeMeshInterop } | { variant: "Curve"; data: CurveInterop } | { variant: "Point"; data: PointCloudInterop } | { variant: "Plane"; data: Plane } | { variant: "Group"; data: GeometryInterop[] } | { variant: "LineSegments"; data: LineSegmentsInterop };
 
 /**
  * Interop struct for curve data
@@ -600,6 +617,16 @@ export interface EvaluationInterop {
      * Implicit identifiers in the latest evaluation (with hash for change detection)
      */
     implicitIdentifiers: ImplicitIdentifier[];
+}
+
+/**
+ * Interop struct for line segments data (wireframe visualization)
+ */
+export interface LineSegmentsInterop {
+    /**
+     * Consecutive vertex pairs: [a0, b0, a1, b1, ...] — each pair = one line segment
+     */
+    segments: [number, number, number][];
 }
 
 /**
@@ -669,6 +696,8 @@ export interface NodeInterop {
     properties: NodePropertyInterop[];
     enabled: boolean;
     visible: boolean;
+    desktopOnly: boolean;
+    experimental: boolean;
     meta: NodeMetaInterop;
 }
 
@@ -768,6 +797,7 @@ export interface VolumeMeshInterop {
  */
 export interface IOEntityInterop {
     id: string;
+    name: string;
     hint: TypeHint;
 }
 
@@ -816,33 +846,33 @@ export interface Mesh {
 }
 
 /**
- * Options for adaptive tessellation to create geometry interoperability
+ * Options for surface tessellation quality.
+ * Both AdvancingFront (trimmed surfaces) and NormalAdaptive (untrimmed NURBS)
+ * draw from these options, each using the fields relevant to its method.
  */
-export interface AdaptiveTessellationOptions {
+export interface TessellationOptions {
     /**
-     * Whether to enable adaptive tessellation
+     * Whether to enable custom tessellation options (false = use defaults)
      */
     enabled: boolean;
     /**
-     * Tolerance for the normal vector: if the L2 norm of the normal vectors is below this value, the edge is considered flat
+     * Maximum chord height (= distance between mesh and underlying surface).
+     * Used by AdvancingFront for trimmed surfaces.
      */
-    normTolerance: number;
+    chordHeightTolerance: number;
     /**
-     * Minimum number of divisions in u direction
+     * Normal deviation threshold (0–1). Subdivides when adjacent normals differ
+     * by more than this L2 norm. Used by NormalAdaptive for untrimmed NURBS.
      */
-    minDivsU: number;
+    normalTolerance: number;
     /**
-     * Minimum number of divisions in v direction
+     * Minimum 3D edge length (prevents degenerate triangles near poles/singularities).
      */
-    minDivsV: number;
+    minEdgeLength: number;
     /**
-     * Minimum depth for division
+     * Maximum 3D edge length (caps triangle size on flat regions).
      */
-    minDepth: number;
-    /**
-     * Maximum depth for division
-     */
-    maxDepth: number;
+    maxEdgeLength: number;
 }
 
 /**
@@ -1032,8 +1062,8 @@ export interface ConnectedComponentNode {
     destinations: NodeId[];
 }
 
-export interface ConnectedComponents<T, U> {
-    nodes: IndexMap<NodeId, ConnectedComponentNode<T, U>>;
+export interface ConnectedComponents<T> {
+    nodes: IndexMap<NodeId, ConnectedComponentNode<T>>;
 }
 
 export interface Connection {
@@ -1042,11 +1072,17 @@ export interface Connection {
 }
 
 export interface DataTreeFormatInterop {
-    outputs: IndexMap<string, string>;
+    outputs: IndexMap<string, DataTreeOutputInfo>;
 }
 
 export interface DataTreeInterop {
     branches: IndexMap<string, string[]>;
+}
+
+export interface DataTreeOutputInfo {
+    formatted: string;
+    itemCount: number;
+    branchCount: number;
 }
 
 export interface Domain {
@@ -1138,13 +1174,19 @@ export interface NodeCreationSetting {
     visible?: boolean;
 }
 
+export interface NodeEndEvent extends NodeEvaluation {
+    elapsedMs: number;
+}
+
 export interface NodeEntityInterop {
     variant: string;
     id: string;
     name: string;
     label: string | undefined;
     inputs: IOEntityInterop[];
+    inputVariables: IOVariables | undefined;
     outputs: IOEntityInterop[];
+    outputVariables: IOVariables | undefined;
     enabled: boolean;
     visible: boolean;
 }
@@ -1158,6 +1200,9 @@ export interface NodeEvaluation {
 export interface NodeItemInterop {
     key: string;
     name: string;
+    description?: string;
+    desktopOnly: boolean;
+    experimental: boolean;
 }
 
 export interface NodeMapInterop {
@@ -1187,9 +1232,15 @@ export interface PointListHandleUnit {
     points: number;
 }
 
-export interface Prune<T, U> {
-    connectedComponents: ConnectedComponents<T, U>[];
+export interface Prune<T> {
+    connectedComponents: ConnectedComponents<T>[];
     bypass: Connection[] | undefined;
+}
+
+export interface SubGraphCreation<T> {
+    subGraph: SubGraph<T>;
+    sources: NodeParameter<undefined>[];
+    destinations: NodeParameter<undefined>[];
 }
 
 export interface SubGraphIdSet {
@@ -1199,11 +1250,11 @@ export interface SubGraphIdSet {
 
 export type AccessTypes = "Item" | "List" | "Tree";
 
-export type DisplayProxyHandle = { variant: "Vector"; data: VectorDisplayHandle } | { variant: "PointList"; data: PointListDisplayHandle } | { variant: "ImplicitSlice"; data: ImplicitSliceDisplayHandle } | { variant: "Texture"; data: TextureDisplayHandle } | { variant: "ClipPlane"; data: ClipPlaneDisplayHandle } | { variant: "FEM"; data: FEMDisplayHandle } | { variant: "Field"; data: FieldDisplayHandle };
+export type DisplayProxyHandle = { variant: "Vector"; data: VectorDisplayHandle } | { variant: "PointList"; data: PointListDisplayHandle } | { variant: "ImplicitSlice"; data: ImplicitSliceDisplayHandle } | { variant: "Texture"; data: TextureDisplayHandle } | { variant: "ClipPlane"; data: ClipPlaneDisplayHandle } | { variant: "Analysis"; data: AnalysisDisplayHandle } | { variant: "BC"; data: BCDisplayHandle } | { variant: "Field"; data: FieldDisplayHandle };
 
 export type EdgeInteropVec = EdgeInterop[];
 
-export type EvaluatorEvent = ({ type: "nodeStart" } & NodeEvaluation) | ({ type: "nodeEnd" } & NodeEvaluation) | { type: "finished" };
+export type EvaluatorEvent = ({ type: "nodeStart" } & NodeEvaluation) | ({ type: "nodeEnd" } & NodeEndEvent) | { type: "finished" } | { type: "cancelled" };
 
 export type GeometryInteropHandleProxy = { variant: "Mesh"; data: MeshInteropHandle } | { variant: "VolumeMesh"; data: VolumeMeshInteropHandle } | { variant: "Curve"; data: CurveInteropHandle } | { variant: "Group"; data: GroupInteropHandle };
 
@@ -1286,7 +1337,7 @@ export class Modular {
     /**
      * Update the tessellation options to modify the tessellation quality for geometry interoperability
      */
-    updateTessellationOptions(options?: AdaptiveTessellationOptions | null): void;
+    updateTessellationOptions(options?: TessellationOptions | null): void;
 }
 
 export function do_nothing_just_tell_wasm_bindgen_to_generate_types(): void;
@@ -1308,14 +1359,15 @@ export interface InitOutput {
     readonly modular_new: () => number;
     readonly modular_updateTessellationOptions: (a: number, b: number) => void;
     readonly do_nothing_just_tell_wasm_bindgen_to_generate_types: () => void;
-    readonly wasm_bindgen__closure__destroy__h3fdafb665afa6310: (a: number, b: number) => void;
-    readonly wasm_bindgen__convert__closures_____invoke__h631ee502614521f5: (a: number, b: number, c: any, d: any) => void;
-    readonly wasm_bindgen__convert__closures_____invoke__hd6c6aa01338fb7aa: (a: number, b: number, c: any) => void;
+    readonly wasm_bindgen__convert__closures_____invoke__h3dbe7453f2f007b1: (a: number, b: number, c: any) => [number, number];
+    readonly wasm_bindgen__convert__closures_____invoke__h87f583fb46491035: (a: number, b: number, c: any, d: any) => void;
+    readonly wasm_bindgen__convert__closures_____invoke__hafe1138708f46688: (a: number, b: number, c: any) => void;
     readonly __wbindgen_malloc: (a: number, b: number) => number;
     readonly __wbindgen_realloc: (a: number, b: number, c: number, d: number) => number;
     readonly __wbindgen_exn_store: (a: number) => void;
     readonly __externref_table_alloc: () => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;
+    readonly __wbindgen_destroy_closure: (a: number, b: number) => void;
     readonly __externref_drop_slice: (a: number, b: number) => void;
     readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __externref_table_dealloc: (a: number) => void;
