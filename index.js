@@ -51,12 +51,19 @@ export class Modular {
         return ret;
     }
     /**
-     * Export the graph in JSON format
-     * @returns {Graph}
+     * Export the graph as a `.nodi` (ZIP) byte array. Binary buffers in
+     * import nodes are extracted into separate ZIP entries to keep the
+     * JSON portion compact and round-trip cleanly through `loadGraph`.
+     * @returns {Uint8Array}
      */
     exportGraph() {
         const ret = wasm.modular_exportGraph(this.__wbg_ptr);
-        return ret;
+        if (ret[3]) {
+            throw takeFromExternrefTable0(ret[2]);
+        }
+        var v1 = getArrayU8FromWasm0(ret[0], ret[1]).slice();
+        wasm.__wbindgen_free(ret[0], ret[1] * 1, 1);
+        return v1;
     }
     /**
      * Find a geometry by its identifier
@@ -98,13 +105,13 @@ export class Modular {
         return v1;
     }
     /**
-     * Load a graph from a JSON string
-     * @param {string} input
+     * Load a graph from a string or byte array — accepts:
+     *   - a JSON `string` (bare `Graph` object or NodeGraph wrapper)
+     *   - a `Uint8Array` containing either a `.nodi` (ZIP) file or JSON bytes
+     * @param {string | Uint8Array} input
      */
     loadGraph(input) {
-        const ptr0 = passStringToWasm0(input, wasm.__wbindgen_malloc, wasm.__wbindgen_realloc);
-        const len0 = WASM_VECTOR_LEN;
-        const ret = wasm.modular_loadGraph(this.__wbg_ptr, ptr0, len0);
+        const ret = wasm.modular_loadGraph(this.__wbg_ptr, input);
         if (ret[1]) {
             throw takeFromExternrefTable0(ret[0]);
         }
@@ -971,12 +978,12 @@ function __wbg_get_imports() {
             arg0.writeBuffer(arg1, arg2, getArrayU8FromWasm0(arg3, arg4), arg5, arg6);
         }, arguments); },
         __wbindgen_cast_0000000000000001: function(arg0, arg1) {
-            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [Externref], shim_idx: 3606, ret: Unit, inner_ret: Some(Unit) }, mutable: true }) -> Externref`.
+            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [Externref], shim_idx: 4035, ret: Unit, inner_ret: Some(Unit) }, mutable: true }) -> Externref`.
             const ret = makeMutClosure(arg0, arg1, wasm_bindgen__convert__closures_____invoke__hafe1138708f46688);
             return ret;
         },
         __wbindgen_cast_0000000000000002: function(arg0, arg1) {
-            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [Externref], shim_idx: 6383, ret: Result(Unit), inner_ret: Some(Result(Unit)) }, mutable: true }) -> Externref`.
+            // Cast intrinsic for `Closure(Closure { owned: true, function: Function { arguments: [Externref], shim_idx: 6878, ret: Result(Unit), inner_ret: Some(Result(Unit)) }, mutable: true }) -> Externref`.
             const ret = makeMutClosure(arg0, arg1, wasm_bindgen__convert__closures_____invoke__h3dbe7453f2f007b1);
             return ret;
         },

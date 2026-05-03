@@ -1307,9 +1307,11 @@ export class Modular {
      */
     evaluate(): Promise<EvaluationInterop>;
     /**
-     * Export the graph in JSON format
+     * Export the graph as a `.nodi` (ZIP) byte array. Binary buffers in
+     * import nodes are extracted into separate ZIP entries to keep the
+     * JSON portion compact and round-trip cleanly through `loadGraph`.
      */
-    exportGraph(): Graph;
+    exportGraph(): Uint8Array;
     /**
      * Find a geometry by its identifier
      */
@@ -1327,9 +1329,11 @@ export class Modular {
      */
     getNodes(): NodeInterop[];
     /**
-     * Load a graph from a JSON string
+     * Load a graph from a string or byte array — accepts:
+     *   - a JSON `string` (bare `Graph` object or NodeGraph wrapper)
+     *   - a `Uint8Array` containing either a `.nodi` (ZIP) file or JSON bytes
      */
-    loadGraph(input: string): void;
+    loadGraph(input: string | Uint8Array): void;
     /**
      * Create a new modular instance
      */
@@ -1350,12 +1354,12 @@ export interface InitOutput {
     readonly modular_changeNodeProperty: (a: number, b: number, c: number, d: any, e: number, f: number) => number;
     readonly modular_clearGraph: (a: number) => void;
     readonly modular_evaluate: (a: number) => any;
-    readonly modular_exportGraph: (a: number) => any;
+    readonly modular_exportGraph: (a: number) => [number, number, number, number];
     readonly modular_findGeometryById: (a: number, b: any) => any;
     readonly modular_findGeometryInteropById: (a: number, b: any) => any;
     readonly modular_getNodeOutput: (a: number, b: number, c: number) => any;
     readonly modular_getNodes: (a: number) => [number, number];
-    readonly modular_loadGraph: (a: number, b: number, c: number) => [number, number];
+    readonly modular_loadGraph: (a: number, b: any) => [number, number];
     readonly modular_new: () => number;
     readonly modular_updateTessellationOptions: (a: number, b: number) => void;
     readonly do_nothing_just_tell_wasm_bindgen_to_generate_types: () => void;
@@ -1368,9 +1372,9 @@ export interface InitOutput {
     readonly __externref_table_alloc: () => number;
     readonly __wbindgen_externrefs: WebAssembly.Table;
     readonly __wbindgen_destroy_closure: (a: number, b: number) => void;
-    readonly __externref_drop_slice: (a: number, b: number) => void;
-    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
     readonly __externref_table_dealloc: (a: number) => void;
+    readonly __wbindgen_free: (a: number, b: number, c: number) => void;
+    readonly __externref_drop_slice: (a: number, b: number) => void;
     readonly __wbindgen_start: () => void;
 }
 
